@@ -1,6 +1,6 @@
-var {parsed:{userURI}} = require("dotenv").config()
+var config = require("dotenv").config()
 
-const URI = userURI || process.env.userURI;
+const URI = config.parsed.userURI || process.env.userURI;
 var mongoose = require("mongoose");
 var options = 
 {
