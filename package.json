@@ -19,12 +19,12 @@
   },
   "homepage": "https://github.com/memefly/memefly-be#readme",
   "dependencies": {
+    "dotenv": "^8.2.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "mongoose": "^5.7.9"
   },
   "devDependencies": {
-    "dotenv": "^8.2.0",
     "nodemon": "^1.19.4"
   }
 }
