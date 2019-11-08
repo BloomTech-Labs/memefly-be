@@ -1,6 +1,10 @@
 var config = require("dotenv").config()
+try{
+    var uri = config.parsed.userURI 
+}catch(error){
+    var uri = process.env.userURI;
+}
 
-const URI = config.parsed.userURI || process.env.userURI;
 var mongoose = require("mongoose");
 var options = 
 {
@@ -13,7 +17,7 @@ var Schema = mongoose.Schema;
 var UserSchema = new Schema({
     //TODO update Schema
 })
-var userConn = mongoose.createConnection(URI, options)
+var userConn = mongoose.createConnection(uri, options)
 
 var UserModel = userConn.model("users", UserSchema);
 
