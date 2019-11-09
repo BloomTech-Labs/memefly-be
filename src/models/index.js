@@ -1,5 +1,6 @@
 var {userURI} = require("../../configVars.js");
 var mongoose = require("mongoose");
+
 var options = 
 {
     useCreateIndex:true,

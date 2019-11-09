@@ -5,18 +5,15 @@ var jwt = require("jsonwebtoken");
 var {privateKey} = require("../../configVars.js");
 var Yup = require("yup");
 
-var registerSchema = 
-    Yup.
-        object().
-            shape({
-                email:Yup.string().email().required(),
-                firstName:Yup.string().required(),
-                lastName:Yup.string().required(),
-                userName:Yup.string().required(),
-                password:Yup.string().required(),
-                moderator:Yup.boolean(),
-                admin:Yup.boolean(),
-            })
+var registerSchema = Yup.object().shape({
+                        email:Yup.string().email().required(),
+                        firstName:Yup.string().required(),
+                        lastName:Yup.string().required(),
+                        userName:Yup.string().required(),
+                        password:Yup.string().required(),
+                        moderator:Yup.boolean(),
+                        admin:Yup.boolean(),
+                    })
 
 var loginSchema = (email) => {
     var fields = email
@@ -33,12 +30,10 @@ function registerCheck(request, response, next){
             then((valid) => {
                 if(valid){
                     next()
-                }else{
-                    response.status(400).json({message:"REGISTER failed at second validation phase >> check malformed body"});
                 }
             }). 
                 catch(error => {
-                    response.status(500).json({"error":error});
+                    response.status(400).json({message:"REGISTER failed at second validation phase >> check malformed body", data:error});
                 })
 }
 
@@ -67,16 +62,37 @@ function loginCheck({body:{email, userName, password}, headers}, response, next)
         validate(fields). 
             then(valid => {
                 if(valid){
-                    console.log(`logging in with ${headers.loginType}`);
+
                     next();
-                }else{
-                    response.status(400).json({message:"LOGIN failed at second validation phase >> check malformed body"});
                 }
             }).
-                catch(() => {
-                    response.status(400).json({message:"LOGIN failed at second validation phase >> check malformed body"});
+                catch(error => {
+                    response.status(400).json({message:"LOGIN failed at second validation phase >> check malformed body", data:error});
                 })
+};
+//middleware that makes sure all incoming username/email is trimmed and lower cased based on what is not undefined
+function lowerCaseUE(request, _, next){
+    function convert(string){
+        var arr = [];
+        for(let i of string.trim().split("")){
+            arr.push(i.toLowerCase());
+        }
+        return arr.join("")
+    }
+
+    var{email, userName} = request.body;
+
+    if(email){
+        request.body.email = convert(request.body.email);
+    }
+    if(userName){
+        request.body.userName = convert(request.body.userName);
+    }
+
+    next();
 }
+
+userRouter.use(lowerCaseUE);
 
 userRouter.
     route("/register"). 
@@ -115,19 +131,18 @@ userRouter.
                 UserModel.
                     findOne({[headers.loginType]:loginValue}). 
                         then(result => {
-                            console.log(result);
                             if (result == null){
                                 response.status(400).json({message:`Invalid ${headers.loginType}/password`});
                             }else{
                                 bcrypt.compare(password, result.password). 
                                     then(valid => {
                                         if(valid){
-                                            jwt.sign({email}, privateKey, {expiresIn:"1h"}, (error, token) => {
+                                            jwt.sign({email, _id:result._id}, privateKey, {expiresIn:"1h"}, (error, token) => {
                                                 if(error){
                                                     response.status(500).json({"error":error}); 
                                                 }else{
                                                     //final stop if all goes well
-                                                    response.status(200).json({message:"logged in", token, userID:result._id});
+                                                    response.cookie('auth', token).status(200).json({message:"logged in", _id:result._id});
                                                 }   
                                             })
                                         }else{
@@ -143,7 +158,37 @@ userRouter.
                                 response.status(500).json({"error":error});
                             })
 
-           })
-        
+           });
+
+function protectRoute(request, response, next){
+    var {auth} = request.cookies;
+    if(auth){
+        jwt.verify(auth, privateKey, (error, token) => {
+            if(error){
+                response.status(401).json({message:"Unauthorized please login"});
+            }else if(token._id == request.headers._id){
+                next();
+            }else{
+                //in case user has logged into another account and has a cookie set to token containing a different user _id
+                response.status(401).json({message:"Unauthorized please login again"});
+            }
+        })
+    }else{
+        response.status(401).json({message:"Unauthorized please login"});
+    }
+}
+//get user personal information
+userRouter. 
+    route("/settings").
+        all(protectRoute).
+            get((request, response) => {
+                UserModel.findById(request.headers._id). 
+                    then((data => {
+                        response.status(200).json({data});
+                    })). 
+                        catch(error => {
+                            response.status(500).json({"error":error});
+                        })
+            })
 
 module.exports = userRouter;
