@@ -195,6 +195,120 @@ userRouter.
                         catch(error => {
                             response.status(500).json({"error":error});
                         })
+            }). 
+            put((request, response) => {
+                //if the body contains password it will need a key of oldPassword as well;
+                {// block scope just to check for body keys
+                    let {password, oldPassword} = request.body;
+                    if(password && oldPassword == undefined){
+                        response.status(400).json({message:"The body contains password it will need a key of oldPassword"});
+                    }else if(oldPassword && password == undefined){
+                        response.status(400).json({message:"The body contains oldPassword it will need a key of password"});
+                        //if both truthy and are equal strings
+                    }else if(oldPassword && password && oldPassword == password){
+                        response.status(400).json({message:"Both old and new passwords are the same"});
+                    }
+                }
+                
+                //the body of the request will contain only data to be updated
+                var allowedData = ["password", "firstName", "lastName", "userName", "email" ];
+                //generator will make adding async updates easier down the road it iterate only over data thats allowed to be updated
+                function* update(){
+                    //field[0] == key && field[1] == value;
+                    for(let field of Object.entries(request.body)){
+                        if (field[0] == "password" ){
+                            yield new Promise((resolve, reject) => {
+                            //find user by id then compare hash if all good, hash new pass and resolve that
+                              UserModel.findById(request.headers._id). 
+                                then(result => {
+                                    if(result == null){
+                                        reject({message:"Invalid user id please log in again", status:401})
+                                    }else{
+                                        //comparing oldPassword with current hashed password
+                                        console.log(result.password, request.body.oldPassword);
+                                        bcrypt.compare(request.body.oldPassword, result.password). 
+
+                                            then(valid => {
+                                                if(valid){
+
+                                                    //hash new password
+                                                    bcrypt.hash(field[1], 8). 
+                                                    then(hash => {
+                                                        resolve({"password":hash})
+                                                    }). 
+                                                        catch(error => {
+                                                            reject({message:`BCRYPT_ERROR ${error}`, status:500})
+                                                        })
+
+                                                }else{
+                                                    console.log(valid);
+                                                    reject({message:"oldPassword is invalid", status:400})
+                                                }
+                                                
+                                            })
+                                    }
+                                })
+                                
+                            })
+                        }else if (allowedData.includes(field[0])){
+                            //everything else can be updated normaly
+                            yield Promise.resolve({[field[0]]:field[1]});
+                        }
+                    }
+                 
+                }
+                Promise.all([...update()]).
+                    then(result => {
+                        
+                        UserModel.
+                            findById(request.headers._id). 
+                                then((user) => {
+                                    result.
+                                    forEach((field) => {
+                                        //add the updated fields to the user
+                                        Object.assign(user, field);
+                                    })
+                                    //final validation for user object is the same as registration
+                                    registerSchema.validate(user). 
+                                        then(user => {
+                                            UserModel.updateOne({_id:request.headers._id}, user). 
+                                                then( () => {
+                                                    //final stop if all went well
+                                                    response.status(201).json({message:"OK Updated",});
+                                                }). 
+                                                catch(error => {
+                                                    //check for unique constraint
+                                                    if(error.code == 11000){
+                                                        //parse error message to give back a more defined response
+                                                        
+                                                        var value = error.errmsg.split(`"`)[1];
+                                                        var uniqueConstraint;
+                                                        //iterate through the document of user object
+                                                        for(let entry of Object.entries(user._doc)){
+
+                                                            if(entry[1] == value){
+                                                                uniqueConstraint = entry[0];
+
+                                                            }
+                                                        }
+                                                   
+                                                        response.status(400).json({message: `${uniqueConstraint} ${value} already taken`, uniqueConstraint, value});
+                                                    }else{
+                                                        response.status(500).json({"error":error});
+                                                    }
+                                                }) 
+                                        }). 
+                                            catch(error => {
+                                                response.status(400).json({message:"UPDATE failed at second validation phase >> check malformed body", data:error})
+                                            })
+                                }). 
+                                    catch(error => {
+                                        response.status(500).json({"error":error})
+                                    })
+                        
+                    }).catch(error => {
+                        response.status(error.status).json({message:error.message})
+                    })
             })
 
 module.exports = userRouter;
