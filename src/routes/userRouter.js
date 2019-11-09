@@ -126,7 +126,7 @@ userRouter.
                                                     response.status(500).json({"error":error}); 
                                                 }else{
                                                     //final stop if all goes well
-                                                    response.status(200).json({message:"logged in", token});
+                                                    response.status(200).json({message:"logged in", token, userID:result._id});
                                                 }   
                                             })
                                         }else{
