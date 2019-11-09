@@ -7,7 +7,7 @@ if(process.env.NODE_ENV != "production"){
     } = require("dotenv").config()
 }else{
     var userURI = process.env.userURI;
-    var userURI = process.env.privateKey;
+    var privateKey = process.env.privateKey;
 }
 module.exports = 
 {
