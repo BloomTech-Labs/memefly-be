@@ -5,11 +5,17 @@ var jwt = require("jsonwebtoken");
 var {privateKey} = require("../../configVars.js");
 var Yup = require("yup");
 
+const USERNAME_REGEX = /^[A-Za-z0-9]+(?:[_-][A-Za-z0-9]+)*$/;
+const NAME_REGEX = /^[a-z ,.'-]+$/i;
 var registerSchema = Yup.object().shape({
                         email:Yup.string().email().required(),
-                        firstName:Yup.string().required(),
-                        lastName:Yup.string().required(),
-                        userName:Yup.string().required(),
+                        firstName:Yup.string().matches(NAME_REGEX, "firstName can contain only ASCII letters").required(),
+                        lastName:Yup.string().matches(NAME_REGEX, "lastName can contain only ASCII letters").required(),
+                        userName:Yup.
+                            string().
+                                matches(USERNAME_REGEX, 
+`userName can contain only ASCII letters and digits, with hyphens,and underscores. userName can only begin and end with ASCII letters or digits.`).
+                                    required(),
                         password:Yup.string().required(),
                         moderator:Yup.boolean(),
                         admin:Yup.boolean(),
