@@ -15,7 +15,12 @@ var options =
 var Schema = mongoose.Schema;
 
 var UserSchema = new Schema({
-    //TODO update Schema
+    email:{type:String, required:true, unique:true},
+    firstName:{type:String, required:true},
+    lastName:{type:String, required:true},
+    userName:{type:String, required:true, unique:true},
+    password:{type:String, required:true},
+    created:{type:Date, default:Date.now},
 })
 var userConn = mongoose.createConnection(uri, options)
 

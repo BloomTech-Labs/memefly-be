@@ -7,6 +7,6 @@ var server = express();
 
 server.use(express.json());
 server.use(cors());
-server.use(userRouter);
+server.use("/api", userRouter);
 server.
     listen(PORT, () => console.log(`Server up and running on port ${PORT}`));
