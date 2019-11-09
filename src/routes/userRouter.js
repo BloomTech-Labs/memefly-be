@@ -115,6 +115,7 @@ userRouter.
                 UserModel.
                     findOne({[headers.loginType]:loginValue}). 
                         then(result => {
+                            console.log(result);
                             if (result == null){
                                 response.status(400).json({message:`Invalid ${headers.loginType}/password`});
                             }else{
