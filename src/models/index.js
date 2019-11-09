@@ -7,7 +7,7 @@ var options =
     useNewUrlParser:true,
 }
 var Schema = mongoose.Schema;
-console.log(userURI);
+console.log(">>>",userURI);
 
 var UserSchema = new Schema({
     email:{type:String, required:true, unique:true},
