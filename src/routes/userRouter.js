@@ -1,44 +1,81 @@
 var userRouter = require("express").Router()
 var {UserModel} = require("../models")
 var bcrypt = require("bcrypt");
-var config = require("dotenv").config()
 var jwt = require("jsonwebtoken");
-try{
-    var privateKey = config.parsed.privateKey
-}catch(error){
-    var privateKey = process.env.privateKey;
+var {privateKey} = require("../../configVars.js");
+var Yup = require("yup");
+
+var registerSchema = 
+    Yup.
+        object().
+            shape({
+                email:Yup.string().email().required(),
+                firstName:Yup.string().required(),
+                lastName:Yup.string().required(),
+                userName:Yup.string().required(),
+                password:Yup.string().required(),
+                moderator:Yup.boolean(),
+                admin:Yup.boolean(),
+            })
+
+var loginSchema = (email) => {
+    var fields = email
+    ? {email:Yup.string().email().required()}
+    : {userName:Yup.string().required()}
+    fields.password = Yup.string().required();
+
+    return Yup.object().shape(fields);
 }
 
-function registerCheck({
-    body:{
-            email, 
-            firstName, 
-            lastName, 
-            userName, 
-            password
+function registerCheck(request, response, next){
+    registerSchema.
+        validate(request.body). 
+            then((valid) => {
+                if(valid){
+                    next()
+                }else{
+                    response.status(400).json({message:"REGISTER failed at second validation phase >> check malformed body"});
+                }
+            }). 
+                catch(error => {
+                    response.status(500).json({"error":error});
+                })
+}
 
-        }}, response, next){
-
-    if(
-        email != undefined &&
-        firstName != undefined &&
-        lastName != undefined &&
-        userName != undefined &&
-        password != undefined
-    ){ next() }
-    else{
-        response.status(400).json({message:"Bad request check request body"});
+//gives the ability to login with either email or userName
+function loginCheck({body:{email, userName, password}, headers}, response, next){
+    var schema, fields;
+    if(password == undefined){
+        response.status(400).json({message:"POST missing password >> check malformed body"});
     }
-}
-
-function loginCheck({body:{email, password}}, response, next){
-    if(
-        email != undefined && 
-        password != undefined
-      ){ next() }
-      else{
-        response.status(400).json({message:"Bad request check request body"});
-      }
+    else if(email == undefined && userName != undefined){
+        schema = loginSchema(false);
+        fields = {userName, password};
+        headers.loginType = "userName";
+    }
+    else if(userName == undefined && email != undefined){
+        schema = loginSchema(true);
+        fields = {email, password};
+        headers.loginType = "email";
+    }else{
+        //default to email login
+        schema = loginSchema(true);
+        fields = {email, password};
+        headers.loginType = "email";
+    }
+    schema. 
+        validate(fields). 
+            then(valid => {
+                if(valid){
+                    console.log(`logging in with ${headers.loginType}`);
+                    next();
+                }else{
+                    response.status(400).json({message:"LOGIN failed at second validation phase >> check malformed body"});
+                }
+            }).
+                catch(() => {
+                    response.status(400).json({message:"LOGIN failed at second validation phase >> check malformed body"});
+                })
 }
 
 userRouter.
@@ -72,13 +109,14 @@ userRouter.
 userRouter.
     route("/login").
         all(loginCheck).
-           post(({body:{email, password}}, response) => {
+           post(({body:{email, userName, password}, headers}, response) => {
+                var loginValue = email ? email:userName;
                 //find user
                 UserModel.
-                    findOne({email}). 
+                    findOne({[headers.loginType]:loginValue}). 
                         then(result => {
                             if (result == null){
-                                response.status(400).json({message:"Invalid email/password"});
+                                response.status(400).json({message:`Invalid ${headers.loginType}/password`});
                             }else{
                                 bcrypt.compare(password, result.password). 
                                     then(valid => {
