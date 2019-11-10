@@ -1015,9 +1015,11 @@ console.log("please be patient seeding takes a while...");
                                 }). 
                                     catch(error => {
                                         console.error(error);
+                                        process.exit(error.code);
                                     }) 
                     }). 
                         catch(error => {
-                            console.error(error)
+                            console.error(error);
+                            process.exit(error.code);
                         })
 })

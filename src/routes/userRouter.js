@@ -286,29 +286,29 @@ userRouter.
                                                     //final stop if all went well
                                                     response.status(201).json({message:"OK Updated",});
                                                 }). 
-                                                catch(error => {
-                                                    //check for unique constraint
-                                                    if(error.code == 11000){
+                                                    catch(error => {
+                                                        //check for unique constraint
+                                                        if(error.code == 11000){
 
-                                                        //parse error message to give back a more defined response
-                                                        var value = error.errmsg.split(`"`)[1];
-                                                        var uniqueConstraint;
-                                                        /*iterate through the document of user object
-                                                        to find the correct key name of our unique constraint's value*/
-                                                        for(let entry of Object.entries(user._doc)){
+                                                            //parse error message to give back a more defined response
+                                                            var value = error.errmsg.split(`"`)[1];
+                                                            var uniqueConstraint;
+                                                            /*iterate through the document of user object
+                                                            to find the correct key name of our unique constraint's value*/
+                                                            for(let entry of Object.entries(user._doc)){
 
-                                                            if(entry[1] == value){
-                                                                uniqueConstraint = entry[0];
+                                                                if(entry[1] == value){
+                                                                    uniqueConstraint = entry[0];
 
+                                                                }
                                                             }
+                                                            //a defined response for front end
+                                                            response.status(400).json({message: `${uniqueConstraint} ${value} already taken`, uniqueConstraint, value});
+                                                        }else{
+                                                            //all other mongoose errors end up here
+                                                            
                                                         }
-                                                        //a defined response for front end
-                                                        response.status(400).json({message: `${uniqueConstraint} ${value} already taken`, uniqueConstraint, value});
-                                                    }else{
-                                                        //all other mongoose errors end up here
-                                                        response.status(500).json({"error":error});
-                                                    }
-                                                }) 
+                                                    }) 
                                         }). 
                                             catch(error => {
                                                 //validation errors end up here 
@@ -324,11 +324,24 @@ userRouter.
                         //rejected promises will end up here from the generator
                         response.status(error.status).json({message:error.message})
                     })
+            }). 
+            delete((request, response) => {
+                //delete account
+                UserModel.deleteOne({_id:request.headers._id}). 
+                    then((result) => {
+                        if(result != null){
+                            response.status(200).json({message:"account was deleted sucsessfully"});
+                        }
+                    }).
+                        catch(error => {
+                            response.status(500).json({"error":error});
+                        })
             })
 /*UTIL ROUTES */
 userRouter. 
     route("/search/:user"). 
         post((request, response) => {
+            //search for users by username
             UserModel.
                 find({userName:new RegExp(request.params.user)}).
                     limit(20).
