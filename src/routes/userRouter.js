@@ -17,8 +17,6 @@ var registerSchema = Yup.object().shape({
 `userName can contain only ASCII letters and digits, with hyphens,and underscores. userName can only begin and end with ASCII letters or digits.`).
                                     required(),
                         password:Yup.string().required(),
-                        moderator:Yup.boolean(),
-                        admin:Yup.boolean(),
                     })
 
 var loginSchema = (email) => {

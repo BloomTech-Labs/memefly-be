@@ -15,8 +15,6 @@ var UserSchema = new Schema({
     lastName:{type:String, required:true},
     userName:{type:String, required:true, unique:true},
     password:{type:String, required:true},
-    admin:{type:Boolean, default:false},
-    moderator:{type:Boolean, default:false},
     created:{type:Date, default:Date.now},
 })
 var userConn = mongoose.createConnection(userURI, options)
