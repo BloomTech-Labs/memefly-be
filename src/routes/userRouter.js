@@ -172,10 +172,19 @@ function protectRoute(request, response, next){
         jwt.verify(auth, privateKey, (error, token) => {
             if(error){
                 response.status(401).json({message:"Unauthorized please login"});
+                /*
+                    when the user signs in, user is sent a cookie with a token in it
+                    and is also sent back a response with the user id to be put in the headers
+                    the token is an encrypted JSON object containing the users id.
+                    ONLY if the users current cookie has an a user id that is equal to the headers user id 
+                    may he or she proceed.
+                    in other words if someone gains access to your user id they cant do anything unless they have your cookie
+                    and vise versa you need both
+                */
             }else if(token._id == request.headers._id){
                 next();
             }else{
-                //in case user has logged into another account and has a cookie set to token containing a different user _id
+                //in case user has logged into another account and has a cookie set to a token containing a different user _id
                 response.status(401).json({message:"Unauthorized please login again"});
             }
         })
@@ -197,6 +206,8 @@ userRouter.
                         })
             }). 
             put((request, response) => {
+                //THE BODY OF THE REQUEST WILL ONLY CONTAIN DATA THAT NEEDS TO BE UPDATED
+
                 //if the body contains password it will need a key of oldPassword as well;
                 {// block scope just to check for body keys
                     let {password, oldPassword} = request.body;
@@ -210,9 +221,9 @@ userRouter.
                     }
                 }
                 
-                //the body of the request will contain only data to be updated
+                
                 var allowedData = ["password", "firstName", "lastName", "userName", "email" ];
-                //generator will make adding async updates easier down the road it iterate only over data thats allowed to be updated
+                //generator will make adding async updates easier down the road it iterates only over data thats allowed to be updated
                 function* update(){
                     //field[0] == key && field[1] == value;
                     for(let field of Object.entries(request.body)){
@@ -225,7 +236,6 @@ userRouter.
                                         reject({message:"Invalid user id please log in again", status:401})
                                     }else{
                                         //comparing oldPassword with current hashed password
-                                        console.log(result.password, request.body.oldPassword);
                                         bcrypt.compare(request.body.oldPassword, result.password). 
 
                                             then(valid => {
@@ -239,9 +249,7 @@ userRouter.
                                                         catch(error => {
                                                             reject({message:`BCRYPT_ERROR ${error}`, status:500})
                                                         })
-
                                                 }else{
-                                                    console.log(valid);
                                                     reject({message:"oldPassword is invalid", status:400})
                                                 }
                                                 
@@ -259,15 +267,19 @@ userRouter.
                 }
                 Promise.all([...update()]).
                     then(result => {
-                        
+                       //Result is an ARRAY of objects eg. [{userName:"YuNo25"}, {email:"example@memefly.com"}] of updated fields only
+                       
+                      
                         UserModel.
+                         //Geting the logged in user Object so we can make a completely new user object by adding updated fields
                             findById(request.headers._id). 
                                 then((user) => {
+
                                     result.
-                                    forEach((field) => {
-                                        //add the updated fields to the user
-                                        Object.assign(user, field);
-                                    })
+                                        forEach((field) => {
+                                            //add the updated fields to the user
+                                            Object.assign(user, field);
+                                        })
                                     //final validation for user object is the same as registration
                                     registerSchema.validate(user). 
                                         then(user => {
@@ -279,11 +291,12 @@ userRouter.
                                                 catch(error => {
                                                     //check for unique constraint
                                                     if(error.code == 11000){
+
                                                         //parse error message to give back a more defined response
-                                                        
                                                         var value = error.errmsg.split(`"`)[1];
                                                         var uniqueConstraint;
-                                                        //iterate through the document of user object
+                                                        /*iterate through the document of user object
+                                                        to find the correct key name of our unique constraint's value*/
                                                         for(let entry of Object.entries(user._doc)){
 
                                                             if(entry[1] == value){
@@ -291,22 +304,26 @@ userRouter.
 
                                                             }
                                                         }
-                                                   
+                                                        //a defined response for front end
                                                         response.status(400).json({message: `${uniqueConstraint} ${value} already taken`, uniqueConstraint, value});
                                                     }else{
+                                                        //all other mongoose errors end up here
                                                         response.status(500).json({"error":error});
                                                     }
                                                 }) 
                                         }). 
                                             catch(error => {
+                                                //validation errors end up here 
                                                 response.status(400).json({message:"UPDATE failed at second validation phase >> check malformed body", data:error})
                                             })
                                 }). 
                                     catch(error => {
+                                        //all other errors end up here
                                         response.status(500).json({"error":error})
                                     })
                         
                     }).catch(error => {
+                        //rejected promises will end up here from the generator
                         response.status(error.status).json({message:error.message})
                     })
             })
