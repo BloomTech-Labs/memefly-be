@@ -325,5 +325,25 @@ userRouter.
                         response.status(error.status).json({message:error.message})
                     })
             })
+/*UTIL ROUTES */
+userRouter. 
+    route("/search/:user"). 
+        post((request, response) => {
+            UserModel.
+                find({userName:new RegExp(request.params.user)}).
+                    limit(20).
+                        then(result => {
+                            var results = 
+                                result.
+                                    map(user => {
+                                        return user.userName;
+                                    })
+                            response.status(200).json({users:results});
+                        }).
+                            catch(error => {
+                                response.status(500).json({"error":error});
+                            })
+        })
+
 
 module.exports = userRouter;

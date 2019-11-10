@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./src/server.js",
-    "dev": "heroku local web"
+    "dev": "heroku local web",
+    "seed":"node ./src/models/seed.js"
   },
   "repository": {
     "type": "git",
