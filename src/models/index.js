@@ -2,7 +2,7 @@
 import mongoose from "mongoose";
 import {ACCOUNT_URI} from "../../configVars.js";
 
-var AccountSchema = 
+export var AccountSchema = 
     mongoose.Schema({
         email:{
             type:String,
@@ -42,9 +42,6 @@ var AccountSchema =
             validate:{
                validator: (value) => {
                     return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm.test(value);
-                },
-                message: () => {
-                    return "password must be at least 8 characters long, must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number Can contain special characters"
                 }
             },
             last_updated:{type:Date, default:Date.now}
@@ -61,7 +58,8 @@ var connectionOptions =
     useCreateIndex:true
 }
 var accountConn = mongoose.createConnection(ACCOUNT_URI, connectionOptions);
+// need to export the validator from the schema because i need to validate password before hashing
+export var validatePassword = AccountSchema.tree.password.validate.validator;
 
-var AccountModel = accountConn.model("Account", AccountSchema);
+export var AccountModel = accountConn.model("Account", AccountSchema);
 
-export default AccountModel;
