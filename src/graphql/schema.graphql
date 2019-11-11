@@ -1,0 +1,10 @@
+type Account{
+    email:String!
+    username:String!
+}
+type Query{
+    hello:String!
+}
+type Mutation{
+    register(username:String!, email:String!, password:String!):String!
+}
