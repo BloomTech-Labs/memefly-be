@@ -21,7 +21,7 @@
   "homepage": "https://github.com/memefly/memefly-be#readme",
   "dependencies": {
     "bcrypt": "^3.0.6",
-    "cookie-parser": "^1.4.4",
+    "cookie": "^0.4.0",
     "cors": "^2.8.5",
     "esm": "^3.2.25",
     "express": "^4.17.1",
