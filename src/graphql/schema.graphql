@@ -1,0 +1,12 @@
+type Account{
+    _id:String!,
+    email:String!
+    username:String!
+}
+type Query{
+    login(username:String, email:String, password:String!):String!
+}
+type Mutation{
+    register(username:String!, email:String!, password:String!):String!
+    update(key:String!, value:String!, oldValue:String):String!
+}

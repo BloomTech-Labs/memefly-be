@@ -1,16 +1,16 @@
 if(process.env.NODE_ENV != "production"){
     var {
         parsed:{
-            userURI,
+            ACCOUNT_URI,
             privateKey,
         }
     } = require("dotenv").config()
 }else{
-    var userURI = process.env.userURI;
+    var ACCOUNT_URI = process.env.ACCOUNT_URI;
     var privateKey = process.env.privateKey;
 }
 module.exports = 
 {
-    userURI,
+    ACCOUNT_URI,
     privateKey,
 }
