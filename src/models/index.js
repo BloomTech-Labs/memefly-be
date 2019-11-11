@@ -2,7 +2,7 @@
 import mongoose from "mongoose";
 import {ACCOUNT_URI} from "../../configVars.js";
 
-export var AccountSchema = 
+var AccountSchema = 
     mongoose.Schema({
         email:{
             type:String,
@@ -51,6 +51,7 @@ export var AccountSchema =
             default:Date.now
         }
     })
+
 var connectionOptions =
 {
     useNewUrlParser:true,
