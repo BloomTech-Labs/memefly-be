@@ -4,21 +4,20 @@ import graphqlHTTP from "express-graphql";
 import { importSchema } from 'graphql-import'
 import { makeExecutableSchema } from 'graphql-tools';
 import bcrypt from "bcrypt";
-import {AccountModel, validatePassword} from "../models";
+import {AccountModel, validate, errmsg} from "../models";
 import {privateKey} from "../../configVars.js";
 import jwt from "jsonwebtoken";
 import cookie from "cookie";
-
 var typeDefs = importSchema("./src/graphql/schema.graphql");
 
-function verifyTokenPredicate(_cookie){
+function verifyToken(_cookie){
     var {token, _id} = cookie.parse(_cookie)
     return new Promise(function (resolve, reject){
         jwt.verify(token, privateKey, (error, token) => {
             if(error){
                 reject(false)
             }else{
-                resolve(token._id == _id);
+                resolve({now:(token._id == _id), _id });
             }
         })
             
@@ -55,8 +54,8 @@ var root = {
     },
     async register({username, email, password}){
         var message;
-        if(!validatePassword(password)){
-            return "password must be at least 8 characters long, must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number Can contain special characters"            
+        if(!validate("password", password)){
+            return errmsg("password")       
         }
         try{
             var hash = await bcrypt.hash(password, 8);
@@ -77,18 +76,65 @@ var root = {
         }
     
     },
-    async update({key, value}, context){
-        var loggedIn = await verifyTokenPredicate(context.request.headers.cookie)
-        if (loggedIn){
-            return "logged in can update"
+    async update({key, value, oldValue}, context){
+        var allowedUpdates = ["password", "email", "username"];
+        if(!allowedUpdates.includes(key)){
+            return "That key is not allowed to be updated";
+        }
+        var loggedIn = await verifyToken(context.request.headers.cookie)
+        if (loggedIn.now){
+            const USER = await AccountModel.findById(loggedIn._id);
 
+            if(USER == undefined){
+                return "Please Log in";
+                //check if the user already has the new value
+            }else if(USER[key] == value){
+                return `${key} is already ${value}`;
+            }
+            var updateObject;
+        
+            switch(key){
+                case "password":
+                    if(value == oldValue){
+                        return "old password is the same as new password";
+                    }else if(oldValue == undefined){
+                        return "Updating password requires you to add a oldValue:value key/pair"
+                    }else if(!validate(key, value)){
+                        return  errmsg(key, value);               
+                    }else{    
+                        // need to verify if old password is correct
+                        let valid = await bcrypt.compare(oldValue, USER.password)
+                            if (valid){
+                                // now you need to hash new password
+                                let hash = await bcrypt.hash(value, 8)
+                                updateObject = {password:hash}   
+                            }else{
+                                return "Old password is invalid"
+                            }      
+                    }
+                    //eveything else can be updated normally after being verified
+                default:
+                    if(!validate(key, value)){
+                        return errmsg(key, value);
+                    }else{
+                         //construct dynamic object 
+                        updateObject = {[key]:value}
+                    }
+            }
+
+            var update = await AccountModel.updateOne({_id:loggedIn._id}, updateObject);
+            if(update.nModified){
+                return `Successfully updated ${key}`;
+            }else{
+                return `Error updating ${key} `;
+            }    
+
+        }else{
+            return "Please Login."
         }
     }
 }
 var schema = makeExecutableSchema({ typeDefs, root });
-
-
-
 var UserRouter = express.Router();
 
 UserRouter.use("/user", function controller(request, response){
