@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ./src/server.js",
     "dev": "nodemon -r esm ./src/server.js",
-    "seed": "node ./src/models/seed.js"
+    "seed": "node -r esm ./src/models/seed.js"
   },
   "repository": {
     "type": "git",

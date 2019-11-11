@@ -8,5 +8,5 @@ type Query{
 }
 type Mutation{
     register(username:String!, email:String!, password:String!):String!
-    update(key:String!, value:String!):String!
+    update(key:String!, value:String!, oldValue:String):String!
 }

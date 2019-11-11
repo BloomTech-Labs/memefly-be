@@ -17,7 +17,6 @@ var AccountSchema =
                 }
             },
             unique:[true,"email address already in use"],
-            last_updated:{type:Date, default:Date.now}
         },
         username:{
             type:String,
@@ -42,6 +41,9 @@ var AccountSchema =
             validate:{
                validator: (value) => {
                     return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm.test(value);
+                },
+                message: () => {
+                    return "password must be at least 8 characters long, must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number Can contain special characters";
                 }
             },
             last_updated:{type:Date, default:Date.now}
@@ -60,7 +62,11 @@ var connectionOptions =
 }
 var accountConn = mongoose.createConnection(ACCOUNT_URI, connectionOptions);
 // need to export the validator from the schema because i need to validate password before hashing
-export var validatePassword = AccountSchema.tree.password.validate.validator;
-
+export var validate = (key, value) => {
+    return AccountSchema.tree[key].validate.validator(value);
+}; 
+export var errmsg = (key, value) => {
+    return AccountSchema.tree[key].validate.message({value});
+};
 export var AccountModel = accountConn.model("Account", AccountSchema);
 
