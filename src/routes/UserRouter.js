@@ -25,6 +25,7 @@ function verifyTokenPredicate(_cookie){
     })
 }
 
+
 var root = {
     async login({username, email, password}, context){
         var loginType;
