@@ -11,11 +11,17 @@ import cookie from "cookie";
 var typeDefs = importSchema("./src/graphql/schema.graphql");
 
 function verifyToken(_cookie){
+    if(_cookie == undefined){
+        return Promise.resolve({now:false});
+    }
     var {token, _id} = cookie.parse(_cookie)
-    return new Promise(function (resolve, reject){
+    return new Promise(function (resolve){
+        if(token == undefined || _id == undefined){
+            resolve({now:false});
+        }
         jwt.verify(token, privateKey, (error, token) => {
             if(error){
-                reject(false)
+                resolve({now:false, _id})
             }else{
                 resolve({now:(token._id == _id), _id });
             }
@@ -88,8 +94,9 @@ var root = {
             if(USER == undefined){
                 return "Please Log in";
                 //check if the user already has the new value
-            }else if(USER[key] == value){
-                return `${key} is already ${value}`;
+            }
+            if(USER[key] == value.toLowerCase()){
+                return `your ${key} is already ${value}`;
             }
             var updateObject;
         
@@ -121,20 +128,53 @@ var root = {
                         updateObject = {[key]:value}
                     }
             }
-
-            var update = await AccountModel.updateOne({_id:loggedIn._id}, updateObject);
-            if(update.nModified){
-                return `Successfully updated ${key}`;
-            }else{
-                return `Error updating ${key} `;
-            }    
+            try{
+                var update = await AccountModel.updateOne({_id:loggedIn._id}, updateObject);
+                if(update.nModified){
+                    return `Successfully updated ${key}`;
+                }else{
+                    return `${key} was not updated`
+                }  
+            }catch(error){
+                //checking for unique constraint
+                 if(error.code == 11000){
+                //giving a more defined response
+                    return `${error.errmsg.split('"')[1]} already taken`;
+                }else{ 
+                    return `Error updating ${key}`
+                }
+            }
 
         }else{
             return "Please Login."
         }
+    },
+    async myAccount(_, context){
+        var loggedIn = await verifyToken(context.request.headers.cookie)
+        if(loggedIn.now){
+            const USER = await AccountModel.findById(loggedIn._id);
+            return USER;
+        }else{
+            return "Please Login"
+        }
+    },
+    async searchUser({username}){
+        try{
+            return await AccountModel.find({username:new RegExp(username)}).limit(20);
+        }catch{
+            return [];
+        }
+        
     }
+
 }
-var schema = makeExecutableSchema({ typeDefs, root });
+var schema = makeExecutableSchema({ 
+    typeDefs, 
+    root,
+    resolverValidationOptions: {
+		requireResolversForResolveType: false,
+	}, 
+});
 var UserRouter = express.Router();
 
 UserRouter.use("/user", function controller(request, response){
