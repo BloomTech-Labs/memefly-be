@@ -32,9 +32,10 @@ function verifyToken(_cookie){
 
 
 var root = {
-    async login({username, email, password}, context){
-        var loginType;
+    async login(args, context){
+        var {username, email, password} = args, loginType;
         //so user can log in with either email or username;
+        
         if(username != undefined && email == undefined) loginType = "username";
         if(username == undefined && email != undefined) loginType = "email";
         if(username != undefined && email != undefined) loginType = "email";//default to email if they are both in body
