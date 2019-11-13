@@ -23,7 +23,7 @@ function verifyToken(_cookie){
             if(error){
                 resolve({now:false, _id})
             }else{
-                resolve({now:(token._id == _id), _id });
+                resolve({now:(token._id == _id), _id, username:token.username });
             }
         })
             
@@ -45,7 +45,7 @@ var root = {
         if(account != null){
             var valid = await bcrypt.compare(password, account.password);
             if(valid){
-                var token = await jwt.sign({_id:account._id}, privateKey, {expiresIn:"1h"})// token is a signed object with account id
+                var token = await jwt.sign({_id:account._id, username:account.username}, privateKey, {expiresIn:"1h"})// token is a signed object with account id
                 if(token){
                     await context.response.cookie("token", token); 
                     await context.response.cookie("_id", `${account._id}`);
@@ -151,7 +151,7 @@ var root = {
         }
     },
     async myAccount(_, context){
-        var loggedIn = await verifyToken(context.request.headers.cookie)
+        var loggedIn = await verifyToken(context.request.headers.cookie);
         if(loggedIn.now){
             const USER = await AccountModel.findById(loggedIn._id);
             return USER;
@@ -161,11 +161,98 @@ var root = {
     },
     async searchUser({username}){
         try{
-            return await AccountModel.find({username:new RegExp(username)}).limit(20);
-        }catch{
+            const SEARCH_RESULT =  await AccountModel.find({username:new RegExp(username)}).limit(20);
+            var finalResult = 
+            SEARCH_RESULT.map(user => {
+                var searchAccount = {}
+                searchAccount.followers = user.followers.length;
+                searchAccount.following = user.following.length;
+                searchAccount.username = user.username;
+               
+                return searchAccount;
+            })
+          
+            return finalResult;
+        }catch(er){
+            console.error(er);
             return [];
         }
         
+    },
+    async follow({username}, context){
+        var loggedIn = await verifyToken(context.request.headers.cookie);
+        if(loggedIn.now){
+            try{
+                const CURRENT_USER = await AccountModel.findById(loggedIn._id);
+                const USER_TO_FOLLOW = await AccountModel.findOne({username});
+                if(USER_TO_FOLLOW == undefined){
+                    throw "because user does not exist";
+                }
+               
+
+                if(CURRENT_USER.username == USER_TO_FOLLOW.username){
+                    return "You cant follow yourself";
+                }else if(USER_TO_FOLLOW.followers.includes(CURRENT_USER._id) ){
+                    return `You are already following ${USER_TO_FOLLOW.username}`;
+                }else{
+                    //add to USER_TO_FOLLOW'S follower array 
+                    var followed = await AccountModel.updateOne(USER_TO_FOLLOW, {$push:{followers:{_id:CURRENT_USER._id}}});
+                    //add to CURRENT_USER follower array
+                    var following = await AccountModel.updateOne(CURRENT_USER, {$push:{following:{_id:USER_TO_FOLLOW._id}}});
+                    if(followed.nModified && following.nModified){
+                        return `you have followed ${USER_TO_FOLLOW.username}`;
+                    }
+                }
+
+                console.log(`${CURRENT_USER.username} is tyring to follow ${USER_TO_FOLLOW.username}`);
+            }catch(error){
+                return `Error following ${username} ${error}`;
+            }
+            
+        }else{
+            return "Please Login"
+        }
+    },
+
+    async unfollow({username}, context){
+        var loggedIn = await verifyToken(context.request.headers.cookie);
+        if(loggedIn.now){
+            try{
+                const CURRENT_USER = await AccountModel.findById(loggedIn._id);
+                const USER_TO_UNFOLLOW = await AccountModel.findOne({username});
+
+                if(USER_TO_UNFOLLOW == undefined){
+                    throw "because user does not exist";
+                }
+               
+
+                if(CURRENT_USER.username == USER_TO_UNFOLLOW.username){
+                    return "You cant unfollow yourself";
+                }else if(!USER_TO_UNFOLLOW.followers.includes(CURRENT_USER._id) ){
+                    return `You are not following ${USER_TO_UNFOLLOW.username}`;
+                }else{
+                               
+                     //remove USER_TO_UNFOLLOW from  CURRENT_USER following
+                    var unfollowing = await AccountModel.updateOne(CURRENT_USER, {$pullAll:{following:[USER_TO_UNFOLLOW._id]}}, {new:true});
+                   
+                    //remove CURRENT_USER from USER_TO_UNFOLLOW following
+                    var unfollowed = await AccountModel.updateOne(USER_TO_UNFOLLOW, {$pullAll:{followers:[CURRENT_USER._id]}}, {new:true});
+
+                    console.log(unfollowing.nModified, unfollowed.nModified);
+                    
+                    if(unfollowed.nModified && unfollowing.nModified){
+                        return `you have unfollowed ${USER_TO_UNFOLLOW.username}`;
+                    }
+                }
+
+                console.log(`${CURRENT_USER.username} is tyring to unfollow ${USER_TO_UNFOLLOW.username}`);
+            }catch(error){
+                return `Error unfollowing ${username} ${error}`;
+            }
+            
+        }else{
+            return "Please Login"
+        }
     }
 
 }

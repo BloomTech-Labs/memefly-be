@@ -2,16 +2,22 @@ type Account{
     email:String!
     username:String!
 }
-type PublicAccount{
+type SearchAccount{
     username:String!
+    followers:Int!
+    following:Int!
 }
+
 type Query{
     login(username:String, email:String, password:String!):String!
     myAccount:Account!
-    searchUser(username:String!):[PublicAccount!]
+    searchUser(username:String!):[SearchAccount!]
 
 }
 type Mutation{
     register(username:String!, email:String!, password:String!):String!
     update(key:String!, value:String!, oldValue:String):String!
+    follow(username:String!):String!
+    unfollow(username:String!):String!
+
 }
