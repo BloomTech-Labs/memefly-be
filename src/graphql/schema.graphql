@@ -20,5 +20,7 @@ type Mutation{
     update(key:String!, value:String!, oldValue:String):String!
     follow(username:String!):String!
     unfollow(username:String!):String!
+    # bring back chat room _id
+    createDMRoom(username:String!):String!
 
 }

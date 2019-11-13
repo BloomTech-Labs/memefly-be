@@ -4,7 +4,7 @@ import graphqlHTTP from "express-graphql";
 import { importSchema } from 'graphql-import'
 import { makeExecutableSchema } from 'graphql-tools';
 import bcrypt from "bcrypt";
-import {AccountModel, validate, errmsg} from "../models";
+import {AccountModel, DirectMessageModel ,validate, errmsg} from "../models";
 import {privateKey} from "../../configVars.js";
 import jwt from "jsonwebtoken";
 import cookie from "cookie";
@@ -214,7 +214,6 @@ var root = {
             return "Please Login"
         }
     },
-
     async unfollow({username}, context){
         var loggedIn = await verifyToken(context.request.headers.cookie);
         if(loggedIn.now){
@@ -255,6 +254,28 @@ var root = {
             return "Please Login"
         }
 
+    },
+    async createDMRoom({username}, context){
+        //TODO check if array if so then apply to userpool if not just a single two way Room
+        var loggedIn = await verifyToken(context.request.headers.cookie);
+        if(loggedIn.now){
+            //find user
+            const CURRENT_USER = await AccountModel.findById(loggedIn._id);
+            const USER_TO_DM = await AccountModel.findOne({username});
+   
+            if(USER_TO_DM == undefined){
+                return `user ${username} does not exist.`
+            }else{
+                var room = await DirectMessageModel.create({
+                    user_pool:[{_id:CURRENT_USER._id}, {_id:USER_TO_DM._id}]
+                })
+                return `${room._id}`;
+            }
+            
+        }else{
+            return "Please Login"
+        }
+        
     }
 
 }
