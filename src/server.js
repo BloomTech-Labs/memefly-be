@@ -18,10 +18,11 @@ app.use("/api", UserRouter);
 var server = http.Server(app);
 var io = socket(server);
 
+
 io.on("connection",(socket) => {
 
     socket.on("create", async function(DMRoom){
-       
+        
         socket.join(DMRoom);
         try{
             var directMessage = await DirectMessageModel.findOne({_id:DMRoom})
@@ -37,7 +38,7 @@ io.on("connection",(socket) => {
             io.sockets.in(DMRoom).emit("connected", "you are now chatting");
         }catch(error){
             console.error(error);
-            socket.leave(DMRoom);
+            return socket.leave(DMRoom);
         }
         //TODO FRONTEND NEEDS USERNAME ON LOGIN        
         socket.on("chat", async (data) => {
@@ -47,13 +48,6 @@ io.on("connection",(socket) => {
                 if(userAccounts == undefined){
                     throw "there is no one to chat with";
                 }
-
-                //finds sender _id
-                // var sender =
-                // userAccounts.filter(user => {
-                //   return user.username == data.username
-                // })[0]
-                //TODO WORKS ONCE?
                 var dm = await DirectMessageModel.updateOne(directMessage, {$push:{messages:{username:data.username, message:data.message, timestamp:moment().format('MMMM Do YYYY, h:mm:ss a')}}});
                 if(dm.nModified){
                     console.log("logged message");
@@ -62,11 +56,14 @@ io.on("connection",(socket) => {
                 }
             }catch(error){
                 console.error(error);
+                return DMRoom
             }
-           
+            
         })  
     })
 })
+
+
 
 server.listen(PORT, function logMessage(){
     console.log("App is online running on http://127.0.0.1:%s", PORT)
