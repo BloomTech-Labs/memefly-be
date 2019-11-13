@@ -21,8 +21,7 @@ var io = socket(server);
 
 io.on("connection",(socket) => {
 
-    socket.on("create", async function(DMRoom){
-        
+    socket.on("create", async function(DMRoom){  
         socket.join(DMRoom);
         try{
             var directMessage = await DirectMessageModel.findOne({_id:DMRoom})
@@ -39,8 +38,7 @@ io.on("connection",(socket) => {
         }catch(error){
             console.error(error);
             return socket.leave(DMRoom);
-        }
-        //TODO FRONTEND NEEDS USERNAME ON LOGIN        
+        }  
         socket.on("chat", async (data) => {
             //find index of userAccounts from data.username
             console.log("saving data");

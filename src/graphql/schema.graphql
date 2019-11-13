@@ -18,11 +18,15 @@ type DMRoom{
     roomID:String
     messages:[Messages]
 }
-
+type Rooms{
+    roomID:String,
+    user:String
+}
 type Query{
     login(username:String, email:String, password:String!):String!
     myAccount:Account!
     searchUser(username:String!):[SearchAccount!]
+    getRooms:[Rooms!]
 
 }
 type Mutation{

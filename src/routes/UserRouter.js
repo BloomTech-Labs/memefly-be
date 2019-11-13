@@ -261,19 +261,25 @@ var root = {
             //find user
             const CURRENT_USER = await AccountModel.findById(loggedIn._id);
             const USER_TO_DM = await AccountModel.findOne({username});
+            
             if(USER_TO_DM == undefined){
                 return {status:404, roomID:`user ${username} does not exist.`}
             }else{
-                //TODO check if there is a room already between users
+                
           
                 var room = await DirectMessageModel.findOne({$and:[{"user_pool": CURRENT_USER},{"user_pool": USER_TO_DM}]}); 
     
-                console.log(room)
                 if (room == undefined){
-                    console.log("room does not exist")
+                //TODO ADD to ROOM history 
+                    
                     var room = await DirectMessageModel.create({
                         user_pool:[{_id:CURRENT_USER._id}, {_id:USER_TO_DM._id}]
                     })
+                    var cRoomed = await AccountModel.update(CURRENT_USER, {$push:{rooms:{roomID:room._id, user:USER_TO_DM.username }}});
+                    
+                    var uRoomed = await AccountModel.update(USER_TO_DM, {$push:{rooms:{roomID:room._id, user:CURRENT_USER.username }}});
+
+                    console.log(cRoomed, uRoomed);
                     return {status:201, roomID:room._id}
                 }else{
                     return {status:200, roomID:room._id, messages:room.messages}
@@ -285,6 +291,15 @@ var root = {
             return {status:404, roomID:"Please Login"};
         }
         
+    },
+    async getRooms(_, context){
+        var loggedIn = await verifyToken(context.request.headers.cookie);
+        if(loggedIn.now){
+            const USER = await AccountModel.findById(loggedIn._id);
+            return USER.rooms;
+        }else{
+            return "Please Login"
+        }
     }
 
 }

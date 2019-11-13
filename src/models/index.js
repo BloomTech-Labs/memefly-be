@@ -53,7 +53,8 @@ var AccountSchema =
             default:Date.now
         },
         followers:[{type:mongoose.Schema.ObjectId, ref:"Account"}],
-        following:[{type:mongoose.Schema.ObjectId, ref:"Account"}]      
+        following:[{type:mongoose.Schema.ObjectId, ref:"Account"}],
+        rooms:[{}]  
     })
 
 var DirectMessageSchema = 
