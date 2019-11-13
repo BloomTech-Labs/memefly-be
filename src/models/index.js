@@ -2,7 +2,6 @@
 import mongoose from "mongoose";
 import {ACCOUNT_URI} from "../../configVars.js";
 
-
 var AccountSchema = 
     mongoose.Schema({
         email:{
@@ -55,6 +54,7 @@ var AccountSchema =
         },
         followers:[{type:mongoose.Schema.ObjectId, ref:"Account"}],
         following:[{type:mongoose.Schema.ObjectId, ref:"Account"}]
+        }
     })
 
 var connectionOptions =

@@ -2,6 +2,7 @@ type Account{
     email:String!
     username:String!
 }
+
 type SearchAccount{
     username:String!
     followers:Int!

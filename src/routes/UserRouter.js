@@ -24,6 +24,7 @@ function verifyToken(_cookie){
                 resolve({now:false, _id})
             }else{
                 resolve({now:(token._id == _id), _id, username:token.username });
+
             }
         })
             
@@ -253,6 +254,7 @@ var root = {
         }else{
             return "Please Login"
         }
+
     }
 
 }
