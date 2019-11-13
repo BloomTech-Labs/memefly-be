@@ -47,6 +47,7 @@ io.on("connection",(socket) => {
                     throw "there is no one to chat with";
                 }
                 var dm = await DirectMessageModel.updateOne(directMessage, {$push:{messages:{username:data.username, message:data.message, timestamp:moment().format('MMMM Do YYYY, h:mm:ss a')}}});
+                console.log(dm)
                 if(dm.nModified){
                     console.log("logged message");
                 }else{
