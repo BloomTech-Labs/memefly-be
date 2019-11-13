@@ -65,6 +65,6 @@ io.on("connection",(socket) => {
 
 
 server.listen(PORT, function logMessage(){
-    console.log("App is online running on http://127.0.0.1:%s", PORT)
+    console.log("App is online running on *:%s", PORT)
 })
 
