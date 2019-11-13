@@ -4,7 +4,7 @@ import graphqlHTTP from "express-graphql";
 import { importSchema } from 'graphql-import'
 import { makeExecutableSchema } from 'graphql-tools';
 import bcrypt from "bcrypt";
-import {AccountModel, validate, errmsg} from "../models";
+import {AccountModel, DirectMessageModel ,validate, errmsg} from "../models";
 import {privateKey} from "../../configVars.js";
 import jwt from "jsonwebtoken";
 import cookie from "cookie";
@@ -31,7 +31,6 @@ function verifyToken(_cookie){
     })
 }
 
-
 var root = {
     async login(args, context){
         var {username, email, password} = args, loginType;
@@ -50,7 +49,7 @@ var root = {
                 if(token){
                     await context.response.cookie("token", token); 
                     await context.response.cookie("_id", `${account._id}`);
-                    return "logged in";
+                    return account.username;
                 }
             }else{
                 return "Invalid Credentials"
@@ -214,7 +213,6 @@ var root = {
             return "Please Login"
         }
     },
-
     async unfollow({username}, context){
         var loggedIn = await verifyToken(context.request.headers.cookie);
         if(loggedIn.now){
@@ -255,6 +253,53 @@ var root = {
             return "Please Login"
         }
 
+    },
+    async createDMRoom({username}, context){
+        
+        var loggedIn = await verifyToken(context.request.headers.cookie);
+        if(loggedIn.now){
+            //find user
+            const CURRENT_USER = await AccountModel.findById(loggedIn._id);
+            const USER_TO_DM = await AccountModel.findOne({username});
+            
+            if(USER_TO_DM == undefined){
+                return {status:404, roomID:`user ${username} does not exist.`}
+            }else{
+                
+          
+                var room = await DirectMessageModel.findOne({$and:[{"user_pool": CURRENT_USER},{"user_pool": USER_TO_DM}]}); 
+    
+                if (room == undefined){
+                //TODO ADD to ROOM history 
+                    
+                    var room = await DirectMessageModel.create({
+                        user_pool:[{_id:CURRENT_USER._id}, {_id:USER_TO_DM._id}]
+                    })
+                    var cRoomed = await AccountModel.update(CURRENT_USER, {$push:{rooms:{roomID:room._id, user:USER_TO_DM.username }}});
+                    
+                    var uRoomed = await AccountModel.update(USER_TO_DM, {$push:{rooms:{roomID:room._id, user:CURRENT_USER.username }}});
+
+                    console.log(cRoomed, uRoomed);
+                    return {status:201, roomID:room._id}
+                }else{
+                    return {status:200, roomID:room._id, messages:room.messages}
+                }
+               
+            }
+            
+        }else{
+            return {status:404, roomID:"Please Login"};
+        }
+        
+    },
+    async getRooms(_, context){
+        var loggedIn = await verifyToken(context.request.headers.cookie);
+        if(loggedIn.now){
+            const USER = await AccountModel.findById(loggedIn._id);
+            return USER.rooms;
+        }else{
+            return "Please Login"
+        }
     }
 
 }

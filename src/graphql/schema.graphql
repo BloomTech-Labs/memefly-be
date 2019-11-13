@@ -8,11 +8,25 @@ type SearchAccount{
     followers:Int!
     following:Int!
 }
-
+type Messages{
+    username:String,
+    message:String,
+    timestamp:String,
+}
+type DMRoom{
+    status:Int!
+    roomID:String
+    messages:[Messages]
+}
+type Rooms{
+    roomID:String,
+    user:String
+}
 type Query{
     login(username:String, email:String, password:String!):String!
     myAccount:Account!
     searchUser(username:String!):[SearchAccount!]
+    getRooms:[Rooms!]
 
 }
 type Mutation{
@@ -20,5 +34,7 @@ type Mutation{
     update(key:String!, value:String!, oldValue:String):String!
     follow(username:String!):String!
     unfollow(username:String!):String!
+    # bring back chat room _id
+    createDMRoom(username:String!):DMRoom!
 
 }
