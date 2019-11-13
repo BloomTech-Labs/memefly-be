@@ -10,12 +10,7 @@ import cors from "cors";
 const PORT = process.env.PORT || 5000;
 var app = express();
 
-app.use(function(_, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header('Access-Control-Allow-Methods', 'DELETE, PUT, GET, POST');
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
- });
+app.use(cors({credentials:true, origin:true}))
 
 app.use(express.json());
 app.use("/api", UserRouter);
