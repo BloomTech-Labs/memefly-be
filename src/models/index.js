@@ -51,6 +51,9 @@ var AccountSchema =
         created:{
             type:Date,
             default:Date.now
+        },
+        followers:[{type:mongoose.Schema.ObjectId, ref:"Account"}],
+        following:[{type:mongoose.Schema.ObjectId, ref:"Account"}]
         }
     })
 

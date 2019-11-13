@@ -1,3 +1,4 @@
+
 🚫 Note: All lines that start with 🚫 are instructions and should be deleted before this is posted to your portfolio. This is intended to be a guideline. Feel free to add your own flare to it.
 
 🚫 The numbers 1️⃣ through 3️⃣ next to each item represent the week that part of the docs needs to be comepleted by.  Make sure to delete the numbers by the end of Labs.
@@ -170,4 +171,3 @@ These contribution guidelines have been adapted from [this good-Contributing.md-
 
 See [Frontend Documentation](🚫link to your frontend readme here) for details on the fronend of our project.
 🚫 Add DS iOS and/or Andriod links here if applicable.
->>>>>>> origin/master
