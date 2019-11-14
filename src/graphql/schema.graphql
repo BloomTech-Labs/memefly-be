@@ -2,6 +2,11 @@ type Account{
     email:String!
     username:String!
 }
+type Meme{
+    name:String!
+    box:[String!]
+    url:String!
+}
 
 type SearchAccount{
     username:String!
@@ -27,6 +32,7 @@ type Query{
     myAccount:Account!
     searchUser(username:String!):[SearchAccount!]
     getRooms:[Rooms!]
+    getMemes:[Meme!]
 
 }
 type Mutation{

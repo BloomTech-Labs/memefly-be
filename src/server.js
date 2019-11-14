@@ -1,6 +1,7 @@
 "use strict"
 import express from "express";
 import UserRouter from "./routes/UserRouter.js";
+import MemeRouter from "./routes/MemeRouter.js";
 import socket from "socket.io";
 import http from "http";
 import {DirectMessageModel, AccountModel} from "./models"
@@ -10,8 +11,9 @@ import cors from "cors";
 const PORT = process.env.PORT || 5000;
 
 var app = express();
-app.use(cors());
+app.use(cors({credentials: true, origin: true}));
 app.use("/api", UserRouter);
+app.use("/api", MemeRouter);
 var server = http.Server(app);
 
 server.listen(PORT, function logMessage(){
@@ -24,9 +26,11 @@ var io = socket(server);
 io.on('connection', function (socket) {
     socket.on("create", async function(DMRoom){  
         console.log("connection made")
+        console.log(DMRoom);
         socket.join(DMRoom);
         try{
             var directMessage = await DirectMessageModel.findOne({_id:DMRoom})
+
             if(directMessage == undefined){
                 throw "DMroom has not been created";
             }
@@ -38,7 +42,7 @@ io.on('connection', function (socket) {
 
             io.sockets.in(DMRoom).emit("connected", "you are now chatting");
         }catch(error){
-            console.error(error);
+            console.error(error, "<<<<<<<<<<<<<<<<<<<<<<<");
             return socket.leave(DMRoom);
         }  
         socket.on("chat", async (data) => {
@@ -59,7 +63,7 @@ io.on('connection', function (socket) {
                     throw "Could not save data";
                 }
             }catch(error){
-                console.error(error);
+                console.error(">>>>>>>>>>>>>>>>>>>>",error);
                 return DMRoom
             }
             
