@@ -1,7 +1,7 @@
 "use strict"
 import mongoose from "mongoose";
 import {ACCOUNT_URI} from "../../configVars.js";
-
+import moment from "moment";
 var AccountSchema = 
     mongoose.Schema({
         email:{
@@ -61,7 +61,7 @@ var DirectMessageSchema =
     mongoose.Schema({
         created:{type:Date, default:Date.now},
         user_pool:[{type:mongoose.Schema.ObjectId, ref:"Account", required:true}],
-        messages:[{}]
+        messages:[{message:{type:String, required:true},username:{type:String, required:true}, timestamp:{type:String, required:true, default:moment().format('MMMM Do YYYY, h:mm:ss a')}}]
         
 
     })

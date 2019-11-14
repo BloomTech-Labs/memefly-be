@@ -4,24 +4,26 @@ import UserRouter from "./routes/UserRouter.js";
 import socket from "socket.io";
 import http from "http";
 import {DirectMessageModel, AccountModel} from "./models"
-import moment from "moment";
+
 
 import cors from "cors";
 const PORT = process.env.PORT || 5000;
+
 var app = express();
-
-app.use(cors({credentials:true, origin:true}))
-
-app.use(express.json());
+app.use(cors());
 app.use("/api", UserRouter);
-
 var server = http.Server(app);
+
+server.listen(PORT, function logMessage(){
+    console.log("App is online running on *:%s", PORT)
+})
+
 var io = socket(server);
 
 
-io.on("connection",(socket) => {
-
+io.on('connection', function (socket) {
     socket.on("create", async function(DMRoom){  
+        console.log("connection made")
         socket.join(DMRoom);
         try{
             var directMessage = await DirectMessageModel.findOne({_id:DMRoom})
@@ -41,16 +43,19 @@ io.on("connection",(socket) => {
         }  
         socket.on("chat", async (data) => {
             //find index of userAccounts from data.username
-            console.log("saving data");
+            
             try{
                 if(userAccounts == undefined){
                     throw "there is no one to chat with";
                 }
-                var dm = await DirectMessageModel.updateOne(directMessage, {$push:{messages:{username:data.username, message:data.message, timestamp:moment().format('MMMM Do YYYY, h:mm:ss a')}}});
+                var message = {username:data.username, message:data.message}
+                var dm = await DirectMessageModel.updateOne({_id:directMessage._id}, {$push:{messages:message}});
                 console.log(dm)
+                io.sockets.in(DMRoom).emit("chat", data);
                 if(dm.nModified){
-                    console.log("logged message");
+                   
                 }else{
+                    console.log(dm);
                     throw "Could not save data";
                 }
             }catch(error){
@@ -60,11 +65,4 @@ io.on("connection",(socket) => {
             
         })  
     })
-})
-
-
-
-server.listen(PORT, function logMessage(){
-    console.log("App is online running on *:%s", PORT)
-})
-
+  });
