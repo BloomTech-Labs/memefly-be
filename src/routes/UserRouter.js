@@ -292,6 +292,7 @@ var root = {
         }
         
     },
+    //get chat history
     async getRooms(_, context){
         var loggedIn = await verifyToken(context.request.headers.cookie);
         if(loggedIn.now){

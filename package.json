@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node -r esm ./src/server.js",
     "dev": "nodemon -r esm ./src/server.js",
-    "seed": "node -r esm ./src/models/seed.js"
+    "seedAcc": "node -r esm ./src/models/AccountSeed.js",
+    "seedMeme": "node -r esm ./src/models/MemeSeed.js"
   },
   "repository": {
     "type": "git",

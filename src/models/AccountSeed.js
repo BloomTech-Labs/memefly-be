@@ -1,4 +1,4 @@
-import {AccountModel} from "../models";
+import {AccountModel} from "./index.js";
 import bcrypt from "bcrypt";
 var count = 0;
 

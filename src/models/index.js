@@ -62,8 +62,12 @@ var DirectMessageSchema =
         created:{type:Date, default:Date.now},
         user_pool:[{type:mongoose.Schema.ObjectId, ref:"Account", required:true}],
         messages:[{message:{type:String, required:true},username:{type:String, required:true}, timestamp:{type:String, required:true, default:moment().format('MMMM Do YYYY, h:mm:ss a')}}]
-        
-
+    })
+var MemeDataSchema = 
+    mongoose.Schema({
+        name:{type:String, required:true},
+        url:{type:String, required:true},
+        box:[{type:String}],
     })
 var connectionOptions =
 {
@@ -73,6 +77,8 @@ var connectionOptions =
 }
 var accountConn = mongoose.createConnection(ACCOUNT_URI, connectionOptions);
 var dmConn = mongoose.createConnection(ACCOUNT_URI, connectionOptions);
+var memeConn = mongoose.createConnection(ACCOUNT_URI, connectionOptions);
+
 // need to export the validator from the schema because i need to validate password before hashing
 export var validate = (key, value) => {
     return AccountSchema.tree[key].validate.validator(value);
@@ -80,6 +86,7 @@ export var validate = (key, value) => {
 export var errmsg = (key, value) => {
     return AccountSchema.tree[key].validate.message({value});
 };
+export var MemeDataModel = memeConn.model("Meme_Data", MemeDataSchema);
 export var AccountModel = accountConn.model("Account", AccountSchema);
 export var DirectMessageModel = dmConn.model("Direct_Message", DirectMessageSchema);
 
