@@ -57,7 +57,7 @@ Why I chose this stack
 - ```getRooms {roomID, user}```
   - returns all of current users created DMRooms along with the usernames and RoomID
   
-#### User Queries and Mutations
+#### Memes Queries and Mutations
 - ```getMemes { name box url }```
   - gets all "most popular" memes and returns the names, bounding box(for css) and url (image)
 
