@@ -40,6 +40,10 @@ Why I chose this stack
       - password
       - username
       - email
+      
+- ```myAccount{username,email}```
+  - returns current user username and or email
+  
 - ```follow(username:"someone")```
   - follows someone by username
   
@@ -49,6 +53,9 @@ Why I chose this stack
 - ```createDMRoom(username:"someone"{ roomID messages {username message timestamp } }```
   - creates a DM Room instance where you and another user can message each other in real time.`
   - returns chat history if an instance of a room between two users already exists
+
+- ```getRooms {roomID, user}```
+  - returns all of current users created DMRooms along with the usernames and RoomID
   
 #### User Queries and Mutations
 - ```getMemes { name box url }```
