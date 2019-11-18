@@ -1,37 +1,29 @@
-
-🚫 Note: All lines that start with 🚫 are instructions and should be deleted before this is posted to your portfolio. This is intended to be a guideline. Feel free to add your own flare to it.
-
-🚫 The numbers 1️⃣ through 3️⃣ next to each item represent the week that part of the docs needs to be comepleted by.  Make sure to delete the numbers by the end of Labs.
-
-🚫 Each student has a required minimum number of meaningful PRs each week per the rubric.  Contributing to docs does NOT count as a PR to meet your weekly requirements.
-
 # API Documentation
 
-#### 1️⃣ Backend delpoyed at [🚫name service here](🚫add URL here) <br>
+#### 1️⃣ Backend delpoyed at [herkou](https://memefly.herokuapp.com/) <br>
 
 ## 1️⃣ Getting started
 
-To get the server running locally:
+prerequisite enviornment variables
+- you need a .env file containing a mongodb URI ```ACCOUNT_URI``` and ```privateKey``` for the auth token
 
-🚫 adjust these scripts to match your project
-
+Setup for development
 - Clone this repo
-- **yarn install** to install all required dependencies
-- **yarn server** to start the local server
-- **yarn test** to start server using testing environment
+- **npm i** to install all required dependencies
+- **npm run dev ** to start the local server
 
-### Backend framework goes here
+### NodeJS + GraphQL + Mongodb/mongoose as ORM
 
-🚫 Why did you choose this framework?
+Why I chose this stack
 
--    Point One
--    Point Two
--    Point Three
--    Point Four
+-    Easy to setup and "get going"
+-    I wanted to learn GraphQL
+-    I wanted to learn MongoDB
 
 ## 2️⃣ Endpoints
-
-🚫This is a placeholder, replace the endpoints, access controll, and descriptioin to match your project
+### There are two endpoints 
+```https://memefly.herokuapp.com/api/user```
+```https://memefly.herokuapp.com/api/memes```
 
 #### Organization Routes
 
@@ -41,96 +33,50 @@ To get the server running locally:
 | PUT    | `/organizatoins/:orgId` | owners         | Modify an existing organization.             |
 | DELETE | `/organizations/:orgId` | owners         | Delete an organization.                      |
 
-#### User Routes
+#### User Queries and Mutations
+- ```register(username:"example", email:"example@example.com", password:"Password1234!")```
 
-| Method | Endpoint                | Access Control      | Description                                        |
-| ------ | ----------------------- | ------------------- | -------------------------------------------------- |
-| GET    | `/users/current`        | all users           | Returns info for the logged in user.               |
-| GET    | `/users/org/:userId`    | owners, supervisors | Returns all users for an organization.             |
-| GET    | `/users/:userId`        | owners, supervisors | Returns info for a single user.                    |
-| POST   | `/users/register/owner` | none                | Creates a new user as owner of a new organization. |
-| PUT    | `/users/:userId`        | owners, supervisors |                                                    |
-| DELETE | `/users/:userId`        | owners, supervisors |                                                    |
+- ```login(username:"example", email:"example@example.com", password:"Password1234!")```
+
+  - login query requires either username or email it will default to email if both are in the body
+- ```searchUser(username:"abc"){username followers following}```
+  - searchUser brings back the users along with user details by a regular expresion match of the input limited to 20
+  
+- ```update(key:"password", value:"NewPass1234!", oldValue:"Password1234!" )```
+   - updates user info only password key requires an oldvalue
+   - Accepted keys are:
+      - password
+      - username
+      - email
+- ```follow(username:"someone")```
+  - follows someone by username
+  
+- ```unfollow(username:"someone")```
+  - unfollows someone by 
+  
+- ```createDMRoom(username:"someone"{ roomID messages {username message timestamp } }```
+  - creates a DM Room instance where you and another user can message each other in real time.`
+  - returns chat history if an instance of a room between two users already exists
+  
+#### User Queries and Mutations
+- ```getMemes { name box url }```
+  - gets all "most popular" memes and returns the names, bounding box(for css) and url (image)
 
 # Data Model
 
-🚫This is just an example. Replace this with your data model
 
-#### 2️⃣ ORGANIZATIONS
 
+#### 2️⃣ User
 ---
-
 ```
 {
-  id: UUID
-  name: STRING
-  industry: STRING
-  paid: BOOLEAN
-  customer_id: STRING
-  subscription_id: STRING
-}
-```
-
-#### USERS
-
----
-
-```
-{
-  id: UUID
-  organization_id: UUID foreign key in ORGANIZATIONS table
-  first_name: STRING
-  last_name: STRING
-  role: STRING [ 'owner', 'supervisor', 'employee' ]
+  username: STRING
   email: STRING
-  phone: STRING
-  cal_visit: BOOLEAN
-  emp_visit: BOOLEAN
-  emailpref: BOOLEAN
-  phonepref: BOOLEAN
+  password: STRING
+  
 }
 ```
-
-## 2️⃣ Actions
-
-🚫 This is an example, replace this with the actions that pertain to your backend
-
-`getOrgs()` -> Returns all organizations
-
-`getOrg(orgId)` -> Returns a single organization by ID
-
-`addOrg(org)` -> Returns the created org
-
-`updateOrg(orgId)` -> Update an organization by ID
-
-`deleteOrg(orgId)` -> Delete an organization by ID
-<br>
-<br>
-<br>
-`getUsers(orgId)` -> if no param all users
-
-`getUser(userId)` -> Returns a single user by user ID
-
-`addUser(user object)` --> Creates a new user and returns that user. Also creates 7 availabilities defaulted to hours of operation for their organization.
-
-`updateUser(userId, changes object)` -> Updates a single user by ID.
-
-`deleteUser(userId)` -> deletes everything dependent on the user
-
-## 3️⃣ Environment Variables
-
-In order for the app to function correctly, the user must set up their own environment variables.
-
-create a .env file that includes the following:
-
-🚫 These are just examples, replace them with the specifics for your app
-    
-    *  STAGING_DB - optional development db for using functionality not available in SQLite
-    *  NODE_ENV - set to "development" until ready for "production"
-    *  JWT_SECRET - you can generate this by using a python shell and running import random''.join([random.SystemRandom().choice('abcdefghijklmnopqrstuvwxyz0123456789!@#\$%^&amp;*(-*=+)') for i in range(50)])
-    *  SENDGRID_API_KEY - this is generated in your Sendgrid account
-    *  stripe_secret - this is generated in the Stripe dashboard
-    
+---
 ## Contributing
 
 When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.
