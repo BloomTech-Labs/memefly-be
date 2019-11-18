@@ -25,14 +25,6 @@ Why I chose this stack
 ```https://memefly.herokuapp.com/api/user```
 ```https://memefly.herokuapp.com/api/memes```
 
-#### Organization Routes
-
-| Method | Endpoint                | Access Control | Description                                  |
-| ------ | ----------------------- | -------------- | -------------------------------------------- |
-| GET    | `/organizations/:orgId` | all users      | Returns the information for an organization. |
-| PUT    | `/organizatoins/:orgId` | owners         | Modify an existing organization.             |
-| DELETE | `/organizations/:orgId` | owners         | Delete an organization.                      |
-
 #### User Queries and Mutations
 - ```register(username:"example", email:"example@example.com", password:"Password1234!")```
 
