@@ -30,36 +30,36 @@ Why I chose this stack
 
 - ```login(username:"example", email:"example@example.com", password:"Password1234!")```
 
-  - login query requires either username or email it will default to email if both are in the body
+  - login query requires either username or email it will default to email if both are in the body.
 - ```searchUser(username:"abc"){username followers following}```
-  - searchUser brings back the users along with user details by a regular expresion match of the input limited to 20
+  - searchUser brings back the users along with user details by a regular expresion match of the input limited to 20.
   
 - ```update(key:"password", value:"NewPass1234!", oldValue:"Password1234!" )```
-   - updates user info only password key requires an oldvalue
+   - updates user info only password key requires an oldValue.
    - Accepted keys are:
       - password
       - username
       - email
       
 - ```myAccount{username,email}```
-  - returns current user username and or email
+  - returns current user username and or email.
   
 - ```follow(username:"someone")```
-  - follows someone by username
+  - follows someone by username.
   
 - ```unfollow(username:"someone")```
-  - unfollows someone by 
+  - unfollows someone by username.
   
 - ```createDMRoom(username:"someone"{ roomID messages {username message timestamp } }```
-  - creates a DM Room instance where you and another user can message each other in real time.`
-  - returns chat history if an instance of a room between two users already exists
+  - creates a DM Room instance where you and another user can message each other in real time.
+  - returns chat history if an instance of a room between two users already exists.
 
 - ```getRooms {roomID, user}```
-  - returns all of current users created DMRooms along with the usernames and RoomID
+  - returns all of current users created DMRooms along with the usernames and RoomID.
   
 #### Memes Queries and Mutations
 - ```getMemes { name box url }```
-  - gets all "most popular" memes and returns the names, bounding box(for css) and url (image)
+  - gets all "most popular" memes and returns the names, bounding box(for css) and url (image).
 
 # Data Model
 
