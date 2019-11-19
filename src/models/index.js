@@ -80,7 +80,7 @@ var dmConn = mongoose.createConnection(ACCOUNT_URI, connectionOptions);
 var memeConn = mongoose.createConnection(ACCOUNT_URI, connectionOptions);
 
 // need to export the validator from the schema because i need to validate password before hashing
-export var validate = (key, value) => {
+export var valid = (key, value) => {
     return AccountSchema.tree[key].validate.validator(value);
 }; 
 export var errmsg = (key, value) => {
