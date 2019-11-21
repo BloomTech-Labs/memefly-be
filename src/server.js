@@ -19,9 +19,13 @@ var allowCrossDomain = function(req, res, next) {
     res.header('Access-Control-Allow-Headers', 'Content-Type,token');
     next();
 }
-app.use(allowCrossDomain);
-
-app.use( cors() );
+var corsOptions = {
+    origin(origin, callback) {
+        callback(null, true);
+    },
+    credentials: true
+};
+app.use(cors(corsOptions) );
 
 app.use("/api", UserRouter);
 app.use("/api", MemeRouter);
