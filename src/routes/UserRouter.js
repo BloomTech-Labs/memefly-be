@@ -88,6 +88,7 @@ const RESOLVERS = {
                         let options = 
                         {
                             expires:new Date.now() + 900000,
+                            maxAge: 1000 * 60 * 60
                         }
                         await context.response.cookie("token", token, options ); 
                         await context.response.cookie("_id", `${ACCOUNT._id}`, options);
