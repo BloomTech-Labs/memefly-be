@@ -11,9 +11,7 @@ const PORT = process.env.PORT || 5000;
 
 var app = express();
 
-app.use(cors({credentials:true, origin:"http://localhost:3000", allowedHeaders:{
-    "Access-Control-Expose-Headers":"set-cookie"
-}}) );
+app.use(cors({credentials:true, origin:"http://localhost:3000"}) );
 
 app.use("/api", UserRouter);
 app.use("/api", MemeRouter);
