@@ -11,12 +11,8 @@ import cors from "cors";
 const PORT = process.env.PORT || 5000;
 
 var app = express();
-app.use(cors({credentials: true, origin: true}));
-app.use(function(_, res, next) {
-    res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-  });
+app.use( cors() );
+
 app.use("/api", UserRouter);
 app.use("/api", MemeRouter);
 var server = http.Server(app);
