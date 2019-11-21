@@ -21,7 +21,7 @@ var allowCrossDomain = function(req, res, next) {
 }
 app.use(allowCrossDomain);
 
-// app.use( cors() );
+app.use( cors() );
 
 app.use("/api", UserRouter);
 app.use("/api", MemeRouter);
