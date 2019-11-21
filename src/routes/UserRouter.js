@@ -85,8 +85,12 @@ const RESOLVERS = {
                 if(pMatches){
                     let token = await jwt.sign({_id:ACCOUNT._id, username:ACCOUNT.username}, privateKey, {expiresIn:"1h"});
                     if(token){
-                        await context.response.cookie("token", token); 
-                        await context.response.cookie("_id", `${ACCOUNT._id}`);
+                        let options = 
+                        {
+                            expires:new Date.now() + 900000,
+                        }
+                        await context.response.cookie("token", token, options ); 
+                        await context.response.cookie("_id", `${ACCOUNT._id}`, options);
                         
                         message = ACCOUNT.username;
                     }
