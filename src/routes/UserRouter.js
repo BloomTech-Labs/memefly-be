@@ -47,18 +47,16 @@ async function loggedIn(cookie, cParse = parse){
 function parseMongooseError(error){
     
     //in the case of user defined error messages;
+    if(typeof error == "string"){
+        return error
+    }
     if (error.status) return error;
     //for unique constraint
     if(error.code == 11000) return `${error.errmsg.split('"')[1]} already taken`;
    
     else{
         //defaults to returning standard Error 
-        if(typeof error == "string"){
-            return error
-        }else{
-            return `${JSON.stringify(error)}`;
-        }
-       
+        return `${JSON.stringify(error)}`;
     }
 }
 function cookieFromContext(context){
@@ -67,6 +65,7 @@ function cookieFromContext(context){
 }
 const RESOLVERS = {
     async login(args, context){
+        //TODO check cookie and see if aready Logged in 
         var message;
         try{
             let {username, email, password} = args, loginKey, loginValue
