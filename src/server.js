@@ -12,7 +12,7 @@ const CORS_OPTIONS =
     methods:["POST"],
     allowedHeaders:["Authorization", "Content-Type", "Accept"],
     credentials:true,
-    origin:"http://localhost:3000",
+    origin:"http://127.0.0.1:3000",
     optionsSuccessStatus:200,
 
 };
