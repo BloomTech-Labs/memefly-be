@@ -6,8 +6,8 @@ var {mongodb_URI}  = envConfig;
 const SALT_ROUNDS = 10;
 
 var AccountSchema = new mongoose.Schema({
-    email:{type:String, required:true},
-    username:{type:String, required:true},
+    email:{type:String, required:true, unique:true},
+    username:{type:String, required:true, unique:true},
     hash:{type:String, required:true},
     created:{type:Date, default:Date.now}
 })
