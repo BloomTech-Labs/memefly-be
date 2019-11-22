@@ -434,7 +434,7 @@ UserRouter.use("/user", function controller(request, response){
     return graphqlHTTP({
             schema,
             rootValue:RESOLVERS,
-            graphiql:true,
+            graphiql:false,
             context:{request, response}
     })(request, response);
 })

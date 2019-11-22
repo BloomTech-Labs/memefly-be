@@ -31,7 +31,7 @@ MemeRouter.use("/memes", function controller(request, response){
     return graphqlHTTP({
             schema,
             rootValue:root,
-            graphiql:true,
+            graphiql:false,
             context:{request, response}
     })(request, response);
 })
