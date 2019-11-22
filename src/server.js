@@ -9,18 +9,14 @@ import cors from "cors";
 const PORT = process.env.PORT || 5000;
 const CORS_OPTIONS = 
 {
-    methods:["POST"],
-    allowedHeaders:["Authorization", "Content-Type", "Accept"],
     credentials:true,
-    origin:"http://127.0.0.1:3000",
-    optionsSuccessStatus:200,
-
+    origin:"http://localhost:3000",
 };
 
 var app = express();
 
-app.use(cors(CORS_OPTIONS) );
 
+app.use(cors(CORS_OPTIONS) );
 app.use("/api", UserRouter);
 app.use("/api", MemeRouter);
 var server = http.Server(app);
