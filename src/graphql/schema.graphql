@@ -1,0 +1,16 @@
+
+type register{
+    msg:String!
+    created: Boolean!
+}
+type login{
+    message:String!
+    token:String!
+}
+
+type Mutation{
+    register(username:String!, email:String!, password:String!):register!
+}
+type Query{
+    login(username:String, email:String, password:String!):login!
+}
