@@ -55,7 +55,7 @@ function generatePassword(type:string, prefix?:string, suffix?:string, length?:n
     switch(type){
         case "valid":
             (() => {
-                let max = (length || 8);
+                let max = (length || 32);
                 for(let i = 0; i <= max ; ++i){
                     password += ascii[Math.floor(Math.random() * ascii.length)];
                 }   
@@ -86,6 +86,9 @@ function testAccount(user:ITestAccount):ITestAccount{
         set(obj:ITestAccount, prop:keyof ITestAccount, value:config){
             if (prop == "password"){
                 delete obj.password;
+                if(typeof value == "string"){
+                    return Reflect.set(obj, "hash", value);
+                }
                 if(value.length != undefined && value.length > 32){
                     console.log(`password length is to long. the maximum it can ever be is 32`);
                     return Reflect.set(obj, "password", "");
@@ -103,7 +106,7 @@ function testAccount(user:ITestAccount):ITestAccount{
                                 return Reflect.set(obj, "password", "");
                             }else{
                                 // undefined undefined for prefix and suffix
-                                return Reflect.set(obj, "hash", generatePassword("valid", undefined, undefined, (value.length || 8) ));
+                                return Reflect.set(obj, "hash", generatePassword("valid", undefined, undefined, value.length ));
                                 
                             }
                         }
@@ -119,6 +122,9 @@ function testAccount(user:ITestAccount):ITestAccount{
                         return Reflect.set(obj, "password", "");
                 }
             }else if(prop == "email"){
+                if(typeof value == "string"){
+                    return Reflect.set(obj, "email", value);
+                }
                 switch(value.type){
                     case "valid":
                         if(value.suffix != undefined || value.prefix != undefined){
@@ -135,6 +141,9 @@ function testAccount(user:ITestAccount):ITestAccount{
                 }
             
             }else if (prop == "username"){
+                if(typeof value == "string"){
+                    return Reflect.set(obj, "username", value);
+                }
                 switch(value.type){
                     case "valid":
                         if(value.suffix != undefined || value.prefix != undefined){
