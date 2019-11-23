@@ -19,10 +19,10 @@ function generateUsername(type:string, prefix?:string, suffix?:string ):string{
     var base = usernames.data[Math.floor(Math.random() * length)].username;
     
     switch(type){
-        case "good":
+        case "valid":
             username = base
             
-        case "bad":
+        case "invalid":
             username = (prefix || "") + base + (suffix || "");
     }
     return username
@@ -34,10 +34,10 @@ function genrateEmail(type:string, prefix?:string, suffix?:string ):string{
     var base = email_addresses.data[Math.floor(Math.random() * length)].email;
     
     switch(type){
-        case "good":
+        case "valid":
             email = base
             break;
-        case "bad":
+        case "invalid":
             //left side of the valid email
             email = (prefix || "") + base.split("@")[0] + (suffix || "");
             break;
@@ -52,14 +52,14 @@ function generatePassword(type:string, prefix?:string, suffix?:string ):string{
     var count = 0;
     var ascii = [..._a_z_0_9_special()];
     switch(type){
-        case "good":
+        case "valid":
             (() => {
                 for(let i = 0; i <= 32; ++i){
                     password += ascii[Math.floor(Math.random() * ascii.length)];
                 }   
             })() 
             break;
-        case "bad":
+        case "invalid":
             password =  (prefix || "") + "password" + (suffix || "");  
     }
     
@@ -85,50 +85,50 @@ function testAccount(user:ITestAccount):ITestAccount{
             if (prop == "password"){
                 delete obj.password;
                 switch(value.type){
-                    case "good":
+                    case "valid":
                         if(value.suffix != undefined || value.prefix != undefined){
                             console.log(`you cant have a type:'${value.type}' and add a prefix or suffix to password`)
                             return Reflect.set(obj, "password", "");
                         }else{
-                            return Reflect.set(obj, "hash", generatePassword("good"));
+                            return Reflect.set(obj, "hash", generatePassword("valid"));
                         }
                         
-                    case "bad":
-                        return Reflect.set(obj, "hash", generatePassword("bad", (value.prefix || ""), (value.suffix || "")));
+                    case "invalid":
+                        return Reflect.set(obj, "hash", generatePassword("invalid", (value.prefix || ""), (value.suffix || "")));
                     default:
-                        console.log(`not a valid type:'${value.type}' for password use good | bad`);
+                        console.log(`not a valid type:'${value.type}' for password use valid | invalid`);
                         return Reflect.set(obj, "password", "");
                 }
             }else if(prop == "email"){
                 switch(value.type){
-                    case "good":
+                    case "valid":
                         if(value.suffix != undefined || value.prefix != undefined){
                             console.log(`you cant have a type:'${value.type}' and add a prefix or suffix to email`)
                             return Reflect.set(obj, "email", obj.email);
                         }else{
-                            return Reflect.set(obj, "email", genrateEmail("good"));
+                            return Reflect.set(obj, "email", genrateEmail("valid"));
                         }
-                    case "bad":
-                        return Reflect.set(obj, "email", genrateEmail("bad", (value.prefix || ""), (value.suffix || "")));
+                    case "invalid":
+                        return Reflect.set(obj, "email", genrateEmail("invalid", (value.prefix || ""), (value.suffix || "")));
                     default:
-                        console.log(`not a valid type:'${value.type}' for email use good | bad`);
+                        console.log(`not a valid type:'${value.type}' for email use valid | invalid`);
                         return Reflect.set(obj, "email", obj.email);
                 }
             
             }else if (prop == "username"){
                 switch(value.type){
-                    case "good":
+                    case "valid":
                         if(value.suffix != undefined || value.prefix != undefined){
                             console.log(`you cant have a type:'${value.type}' and add a prefix or suffix to username`)
                             return Reflect.set(obj, "username", obj.username);
                         }else{
-                            return Reflect.set(obj, "username", generateUsername("good"));
+                            return Reflect.set(obj, "username", generateUsername("valid"));
                         }
                        
-                    case "bad":
-                        return Reflect.set(obj, "username", generateUsername("bad", (value.prefix || ""), (value.suffix || "")));
+                    case "invalid":
+                        return Reflect.set(obj, "username", generateUsername("invalid", (value.prefix || ""), (value.suffix || "")));
                     default:
-                            console.log(`not a valid type:'${value.type}' for username use good | bad`);
+                            console.log(`not a valid type:'${value.type}' for username use valid | invalid`);
                             return Reflect.set(obj, "email", obj.email);
             }
             }else{
