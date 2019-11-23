@@ -109,7 +109,10 @@ function testAccount(user:ITestAccount):ITestAccount{
                         }
                         
                     case "invalid":
-
+                        if(value.length != undefined){
+                            console.log(`you cant have a type:'${value.type}' and give it a length`);
+                            return Reflect.set(obj, "password", "");
+                        }
                         return Reflect.set(obj, "hash", generatePassword("invalid", (value.prefix || ""), (value.suffix || "") ));
                     default:
                         console.log(`not a valid type:'${value.type}' for password use valid | invalid`);
