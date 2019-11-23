@@ -1,37 +1,46 @@
+import * as email_addresses from "../../../data/seed_data/email.json";
+
 interface ITestAccount{
     username:string;
-    email:string;
+    email:string | config;
     hash?:string;
-    password?:string | password; 
+    password?:string | config; 
 }
-interface password{
+interface config{
     type:string;
 }
 
+function genrateEmail(type:string):string{
+    var email:string = "";
+    var length = email_addresses.data.length;
+    switch(type){
+        case "strong":
+            email = email_addresses.data[Math.floor(Math.random() * length)].email;
+            break;
+        case "weak":
+            //left side of the valid email
+            email = email_addresses.data[Math.floor(Math.random() * length)].email.split("@")[0]; 
+            break;
+        
+    }
+    return email;
+}
 
-// I want a function that returns an new test_account proxy
-/*
-{                                    {
-  email:"test@test.com",              email:"test@test.com",     
-  userame:"test",           >>>>>>    username:"test",
-  password:"test",                    hash:"test",      
-}                                    {
-*/
 function generatePassword(type:string):string{
+    var password:string = ""
     var special = ["!","@","#","$","%","^","&","*","(",")"];
     var count = 0;
     var ascii = [..._a_z_0_9_special()];
     switch(type){
         case "strong":
-            return (() => {
-                let password:string = "";
+            (() => {
                 for(let i = 0; i <= 32; ++i){
                     password += ascii[Math.floor(Math.random() * ascii.length)];
-                }
-                return password;
+                }   
             })() 
+            break;
         case "weak":
-            return "password";      
+            password = "password";      
     }
     
     function* _a_z_0_9_special(){
@@ -46,13 +55,13 @@ function generatePassword(type:string):string{
             }
         }
     } 
-    return String(ascii)
+    return password;
 }
 
 
 function testAccount(user:ITestAccount):ITestAccount{
     var handler = {
-        set(obj:ITestAccount, prop:keyof ITestAccount, value:password){
+        set(obj:ITestAccount, prop:keyof ITestAccount, value:config){
             if (prop == "password"){
                 delete obj.password;
                 switch(value.type){
@@ -61,9 +70,20 @@ function testAccount(user:ITestAccount):ITestAccount{
                     case "weak":
                         return Reflect.set(obj, "hash", generatePassword("weak"));
                     default:
-                        return Reflect.set(obj, "hash", generatePassword("weak"));
+                        console.log(`not a valid type:'${value.type}' for password use strong | weak`);
+                        return Reflect.set(obj, "password", "");
                 }
-                return false
+            }else if(prop == "email"){
+                switch(value.type){
+                    case "strong":
+                        return Reflect.set(obj, "email", genrateEmail("strong"));
+                    case "weak":
+                        return Reflect.set(obj, "email", genrateEmail("weak"));
+                    default:
+                        console.log(`not a valid type:'${value.type}' for email use strong | weak`);
+                        return Reflect.set(obj, "email", obj.email);
+                }
+            
             }else{
                 return false;
             }
