@@ -19,7 +19,7 @@ interface IAccount extends mongoose.Document{
     created:Date;
 }
 interface IAccountModel extends IAccount, mongoose.Document{
-    compareHash(plain:string, hash:string):boolean;
+    compareHash(plain:string):boolean;
 }
 
 
