@@ -31,12 +31,17 @@ AccountSchema.pre<IAccount>("save", async function(next){
         next();
     }
 })
-
+var options =
+{
+    useCreateIndex: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}
 
 AccountSchema.methods.compareHash =  async function(plain:string):Promise<boolean>{
     return await bcrypt.compare(plain, this.hash);
 }
-var conn = mongoose.createConnection(mongodb_URI);
+var conn = mongoose.createConnection(mongodb_URI, options);
 
 var AccountModel =  conn.model<IAccountModel>("Account", AccountSchema);
 
