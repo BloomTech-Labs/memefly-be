@@ -11,6 +11,7 @@ interface config{
     type:string;
     suffix?:string;
     prefix?:string;
+    length?:number;
 }
 
 function generateUsername(type:string, prefix?:string, suffix?:string ):string{
@@ -46,7 +47,7 @@ function genrateEmail(type:string, prefix?:string, suffix?:string ):string{
     return email;
 }
 
-function generatePassword(type:string, prefix?:string, suffix?:string ):string{
+function generatePassword(type:string, prefix?:string, suffix?:string, length?:number ):string{
     var password:string = ""
     var special = ["!","@","#","$","%","^","&","*","(",")"];
     var count = 0;
@@ -54,7 +55,8 @@ function generatePassword(type:string, prefix?:string, suffix?:string ):string{
     switch(type){
         case "valid":
             (() => {
-                for(let i = 0; i <= 32; ++i){
+                let max = (length || 8);
+                for(let i = 0; i <= max ; ++i){
                     password += ascii[Math.floor(Math.random() * ascii.length)];
                 }   
             })() 
@@ -84,17 +86,31 @@ function testAccount(user:ITestAccount):ITestAccount{
         set(obj:ITestAccount, prop:keyof ITestAccount, value:config){
             if (prop == "password"){
                 delete obj.password;
+                if(value.length != undefined && value.length > 32){
+                    console.log(`password length is to long. the maximum it can ever be is 32`);
+                    return Reflect.set(obj, "password", "");
+                }
                 switch(value.type){
+                    //8 is the is the min for a valid length of a password 32 is the max period;
+                
                     case "valid":
                         if(value.suffix != undefined || value.prefix != undefined){
-                            console.log(`you cant have a type:'${value.type}' and add a prefix or suffix to password`)
+                            console.log(`you cant have a type:'${value.type}' and add a prefix or suffix to password`);
                             return Reflect.set(obj, "password", "");
                         }else{
-                            return Reflect.set(obj, "hash", generatePassword("valid"));
+                            if(value.length != undefined && value.length < 8){
+                                console.log( `password is to short to be a valid password add a length between  8 and 32`);
+                                return Reflect.set(obj, "password", "");
+                            }else{
+                                // undefined undefined for prefix and suffix
+                                return Reflect.set(obj, "hash", generatePassword("valid", undefined, undefined, (value.length || 8) ));
+                                
+                            }
                         }
                         
                     case "invalid":
-                        return Reflect.set(obj, "hash", generatePassword("invalid", (value.prefix || ""), (value.suffix || "")));
+
+                        return Reflect.set(obj, "hash", generatePassword("invalid", (value.prefix || ""), (value.suffix || "") ));
                     default:
                         console.log(`not a valid type:'${value.type}' for password use valid | invalid`);
                         return Reflect.set(obj, "password", "");
