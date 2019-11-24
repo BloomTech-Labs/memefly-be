@@ -1,7 +1,7 @@
 import * as email_addresses from "../../../data/seed_data/email.json";
 import * as usernames from "../../../data/seed_data/username.json";
 
-interface ITestAccount{
+export interface ITestAccount{
     username:string | config;
     email:string | config;
     hash?:string;
