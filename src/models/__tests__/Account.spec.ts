@@ -3,13 +3,17 @@ import AccountModel from "../Account";
 import testAccount from "./utils/testAccount";
 import "mocha";
 
+after(async () => {
+    AccountModel.collection.drop();
+})
+
 describe("Valid Account Creation", () => {
     var _id:string;
-    var test = testAccount({ username:"", email:"", password:"" })
+    var test = testAccount();
     test.email = {type:"valid"};
     test.username = {type:"valid"};
     test.password = {type:"valid"};
-    //hash is part the excepted AccountModel's Schema, so I am just storing password to a top level variable to not confuse the reader
+    //hash is part of the excepted AccountModel's Schema, so I am just storing password to a top level variable to not confuse the reader
     var password:string = (test.hash as string);
     console.log("running test on ", test);
     it("successfully gets created", async () => {
@@ -43,6 +47,10 @@ describe("Valid Account Creation", () => {
        }else{
            assert.fail();
        }
-    })
-         
+    })       
+})
+
+describe("Invalid Account Creation", () => {
+    var test = testAccount();
+    console.log(test);
 })
