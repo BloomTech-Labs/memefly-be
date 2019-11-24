@@ -9,12 +9,12 @@ interface ITestAccount{
 }
 interface config{
     type:string;
-    suffix?:string;
+    postfix?:string;
     prefix?:string;
     length?:number;
 }
 
-function generateUsername(type:string, prefix?:string, suffix?:string ):string{
+function generateUsername(type:string, prefix?:string, postfix?:string ):string{
     var username:string = "";
     var length = usernames.data.length;
     var base = usernames.data[Math.floor(Math.random() * length)].username;
@@ -24,12 +24,12 @@ function generateUsername(type:string, prefix?:string, suffix?:string ):string{
             username = base
             
         case "invalid":
-            username = (prefix || "") + base + (suffix || "");
+            username = (prefix || "") + base + (postfix || "");
     }
     return username
 }
 
-function genrateEmail(type:string, prefix?:string, suffix?:string ):string{
+function genrateEmail(type:string, prefix?:string, postfix?:string ):string{
     var email:string = "";
     var length = email_addresses.data.length;
     var base = email_addresses.data[Math.floor(Math.random() * length)].email;
@@ -40,14 +40,14 @@ function genrateEmail(type:string, prefix?:string, suffix?:string ):string{
             break;
         case "invalid":
             //left side of the valid email
-            email = (prefix || "") + base.split("@")[0] + (suffix || "");
+            email = (prefix || "") + base.split("@")[0] + (postfix || "");
             break;
         
     }
     return email;
 }
 
-function generatePassword(type:string, prefix?:string, suffix?:string, length?:number ):string{
+function generatePassword(type:string, prefix?:string, postfix?:string, length?:number ):string{
     var password:string = ""
     var special = ["!","@","#","$","%","^","&","*","(",")"];
     var count = 0;
@@ -62,7 +62,7 @@ function generatePassword(type:string, prefix?:string, suffix?:string, length?:n
             })() 
             break;
         case "invalid":
-            password =  (prefix || "") + "password" + (suffix || "");  
+            password =  (prefix || "") + "password" + (postfix || "");  
     }
     
     function* _a_z_0_9_special(){
@@ -81,7 +81,7 @@ function generatePassword(type:string, prefix?:string, suffix?:string, length?:n
 }
 
 
-function testAccount(user:ITestAccount):ITestAccount{
+function testAccount():ITestAccount{
     var handler = {
         set(obj:ITestAccount, prop:keyof ITestAccount, value:config){
             if (prop == "password"){
@@ -97,15 +97,15 @@ function testAccount(user:ITestAccount):ITestAccount{
                     //8 is the is the min for a valid length of a password 32 is the max period;
                 
                     case "valid":
-                        if(value.suffix != undefined || value.prefix != undefined){
-                            console.log(`you cant have a type:'${value.type}' and add a prefix or suffix to password`);
+                        if(value.postfix != undefined || value.prefix != undefined){
+                            console.log(`you cant have a type:'${value.type}' and add a prefix or postfix to password`);
                             return Reflect.set(obj, "password", "");
                         }else{
                             if(value.length != undefined && value.length < 8){
                                 console.log( `password is to short to be a valid password add a length between  8 and 32`);
                                 return Reflect.set(obj, "password", "");
                             }else{
-                                // undefined undefined for prefix and suffix
+                                // undefined undefined for prefix and postfix
                                 return Reflect.set(obj, "hash", generatePassword("valid", undefined, undefined, value.length ));
                                 
                             }
@@ -116,7 +116,7 @@ function testAccount(user:ITestAccount):ITestAccount{
                             console.log(`you cant have a type:'${value.type}' and give it a length`);
                             return Reflect.set(obj, "password", "");
                         }
-                        return Reflect.set(obj, "hash", generatePassword("invalid", (value.prefix || ""), (value.suffix || "") ));
+                        return Reflect.set(obj, "hash", generatePassword("invalid", (value.prefix || ""), (value.postfix || "") ));
                     default:
                         console.log(`not a valid type:'${value.type}' for password use valid | invalid`);
                         return Reflect.set(obj, "password", "");
@@ -127,14 +127,14 @@ function testAccount(user:ITestAccount):ITestAccount{
                 }
                 switch(value.type){
                     case "valid":
-                        if(value.suffix != undefined || value.prefix != undefined){
-                            console.log(`you cant have a type:'${value.type}' and add a prefix or suffix to email`)
+                        if(value.postfix != undefined || value.prefix != undefined){
+                            console.log(`you cant have a type:'${value.type}' and add a prefix or postfix to email`)
                             return Reflect.set(obj, "email", obj.email);
                         }else{
                             return Reflect.set(obj, "email", genrateEmail("valid"));
                         }
                     case "invalid":
-                        return Reflect.set(obj, "email", genrateEmail("invalid", (value.prefix || ""), (value.suffix || "")));
+                        return Reflect.set(obj, "email", genrateEmail("invalid", (value.prefix || ""), (value.postfix || "")));
                     default:
                         console.log(`not a valid type:'${value.type}' for email use valid | invalid`);
                         return Reflect.set(obj, "email", obj.email);
@@ -146,15 +146,15 @@ function testAccount(user:ITestAccount):ITestAccount{
                 }
                 switch(value.type){
                     case "valid":
-                        if(value.suffix != undefined || value.prefix != undefined){
-                            console.log(`you cant have a type:'${value.type}' and add a prefix or suffix to username`)
+                        if(value.postfix != undefined || value.prefix != undefined){
+                            console.log(`you cant have a type:'${value.type}' and add a prefix or postfix to username`)
                             return Reflect.set(obj, "username", obj.username);
                         }else{
                             return Reflect.set(obj, "username", generateUsername("valid"));
                         }
                        
                     case "invalid":
-                        return Reflect.set(obj, "username", generateUsername("invalid", (value.prefix || ""), (value.suffix || "")));
+                        return Reflect.set(obj, "username", generateUsername("invalid", (value.prefix || ""), (value.postfix || "")));
                     default:
                             console.log(`not a valid type:'${value.type}' for username use valid | invalid`);
                             return Reflect.set(obj, "email", obj.email);
@@ -164,7 +164,7 @@ function testAccount(user:ITestAccount):ITestAccount{
             }
         }
     }
-    return new Proxy(user, handler)
+    return new Proxy({username:"", email:"", password:""}, handler)
 }
 
 export default testAccount
