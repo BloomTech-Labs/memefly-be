@@ -6,9 +6,38 @@ var {mongodb_URI}  = envConfig;
 const SALT_ROUNDS = 10;
 
 var AccountSchema = new mongoose.Schema({
-    email:{type:String, required:true, unique:true},
-    username:{type:String, required:true, unique:true},
-    hash:{type:String, required:true},
+    email:{
+        type:String, 
+        required:true, 
+        unique:true,
+        validate:{
+            validator(value:string):boolean{
+                return /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/g.test(value)
+            },
+            message:"Invalid email address"
+        }
+    },
+    username:{
+        type:String, 
+        required:true, 
+        unique:true,
+        validate:{
+            validator(value:string):boolean{
+               return /^(?!.*\.\.)(?!.*\.$)[^\W][\w.]{2,29}$/igm.test(value);
+            },
+            message:"Invalid username"
+        }
+    },
+    hash:{
+        type:String,
+        required:true,
+        validate:{
+            validator(value:string):boolean{
+                return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm.test(value);
+            },
+            message:"Password must be at least 8 characters long, must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number Can contain special characters"           
+        },
+    },
     created:{type:Date, default:Date.now}
 })
 
@@ -23,14 +52,19 @@ interface IAccountModel extends IAccount, mongoose.Document{
 }
 
 
-AccountSchema.pre<IAccount>("save", async function(next){
+AccountSchema.pre<IAccount>("save",function(next){
     if(this.isModified("hash")){
-        this.hash = await bcrypt.hash(this.hash, SALT_ROUNDS);
-        next();
+        this.validate(async (error) => {
+            if(!error){
+                this.hash = await bcrypt.hash(this.hash, SALT_ROUNDS);
+                next();
+            }
+        })    
     }else{
         next();
     }
-})
+});
+
 var options =
 {
     useCreateIndex: true,
