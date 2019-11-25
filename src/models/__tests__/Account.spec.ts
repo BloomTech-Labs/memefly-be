@@ -34,7 +34,7 @@ describe("Valid Account", () => {
     it("successfully compares hash with valid password", async () => {
         let account = await AccountModel.findById(_id);
         if(account){
-           let compare = await account.compareHash(password);
+           let compare = account.compareHash(password);
            expect(compare).to.equal(true);
        }else{
            assert.fail();
