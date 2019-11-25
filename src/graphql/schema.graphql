@@ -1,11 +1,12 @@
 
 type register{
-    msg:String!
+    message:String
     created: Boolean!
 }
 type login{
-    message:String!
-    token:String!
+    message:String
+    token:String
+    loggedIn:Boolean!
 }
 
 type Mutation{
