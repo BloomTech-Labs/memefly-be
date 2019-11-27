@@ -33,8 +33,9 @@ describe("Valid Account", () => {
     });
     it("successfully compares hash with valid password", async () => {
         let account = await AccountModel.findById(_id);
+       
         if(account){
-           let compare = account.compareHash(password);
+           let compare = await Promise.resolve(account.compareHash(password));
            expect(compare).to.equal(true);
        }else{
            assert.fail();
@@ -43,7 +44,7 @@ describe("Valid Account", () => {
     it("successfully compares hash with invalid password", async () => {
         let account = await AccountModel.findById(_id);
         if(account){
-           let compare = await account.compareHash(password + "_");
+           let compare = await Promise.resolve(account.compareHash(password + "_"));
            expect(compare).to.equal(false);
        }else{
            assert.fail();
@@ -151,7 +152,7 @@ describe("Invalid Account\n", () => {
             }catch(error){
                 message = error.message;
                
-            }finally{                       //aka hash
+            }finally{                       //aka password
                 console.log("TESTING: ",test.hash);
                 expect(message).to.not.equal(undefined);
             }
