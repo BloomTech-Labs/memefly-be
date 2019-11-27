@@ -105,7 +105,7 @@ describe("Invalid Account\n", () => {
         test.username = {type:"invalid", postfix:"-"}; 
         test.email = {type:"valid"}
         test.password = {type:"valid"};
-        it(logCurrent(test, "did not create Account with Invalid email that end with a -"), async () => {
+        it(logCurrent(test, "did not create Account with Invalid username that ends with a -"), async () => {
             var message:string | undefined;
             try{
                 await AccountModel.create(test);
