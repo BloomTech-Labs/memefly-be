@@ -5,7 +5,7 @@ if (process.env.NODE_ENV != "production"){
 
 
 const PORT = process.env.PORT || 5000;
-import express, { request } from "express";
+import express from "express";
 import AccountRouter from "./Routes/AccountRouter";
 
 var app = express();
