@@ -15,7 +15,7 @@ describe("Valid Account", () => {
     test.password = {type:"valid"};
     //hash is part of the excepted AccountModel's Schema, so I am just storing password to a top level variable to not confuse the reader
     var password:string = (test.hash as string);
-    console.log("running \"Valid Account Creation\" test on Account", test);
+    // console.log("running \"Valid Account Creation\" test on Account", test);
     it("successfully gets created", async () => {
         let account = await AccountModel.create(test);
         expect(account.toObject()).to.have.own.property("_id");
@@ -55,7 +55,7 @@ describe("Valid Account", () => {
 
 describe("Invalid Account\n", () => {
     function logCurrent(test:ITestAccount, it:string):string{     
-        console.log(`running \"${it}\" on Account`, test);
+        // console.log(`running \"${it}\" on Account`, test);
         return it;
     }
 
