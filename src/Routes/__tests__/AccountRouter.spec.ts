@@ -52,7 +52,7 @@ function axioConfig(query:string):AxiosRequestConfig{
 }
 var server = spawn("node", ["./build/server.js"]);
        server.stdout.on("data", (data) => {
-           console.log(`Test ${String(data)}`);
+           console.log(`Test ${data}`);
        })
 
 describe("Account Router", () => {
@@ -107,6 +107,20 @@ describe("Account Router", () => {
        it("successfully logs in with username and password", async () => {
             let loggedIn = await login.call(state);
             expect(loggedIn).to.eql(true);
+       })
+       it("brings auth cookie back in the response header", async () =>{
+           var token;
+           let {headers:{["set-cookie"]:cookie}} = await axios({...axioConfig(log), withCredentials:true});
+           for(let i of cookie){
+               if(i.includes("token")){
+                    let cookieArr = i.split(";");
+                    token = {token:cookieArr[0].split("=")[1]};
+               }else{
+                   return assert("no auth cookie found.")
+               }
+               
+           }
+           expect(token).to.haveOwnProperty("token")
        })
        it("decoded token _id == logged in account _id", async () => {
            if(state.tokenDecrypted != undefined){
