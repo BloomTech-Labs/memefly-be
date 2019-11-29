@@ -38,7 +38,7 @@ interface  loginConfig{
     [Symbol.iterator]:any
 }
 var root = {
-    async register(args:IAccountArgs, context:IContext):Promise<Imessage>{
+    async register(args:IAccountArgs):Promise<Imessage>{
         var message:Imessage = {};
         try {
             let {username, email, password:hash} = args;
@@ -81,10 +81,9 @@ var root = {
                 if(account != undefined){
                     let valid = account.compareHash($.password);
                     if(valid){
-                        //auth token stuff
                         let token = await sign({_id:account._id});
-            
-                        if(token){
+                        if(token){  
+                            context.response.cookie("token", token);
                             message = {token, loggedIn:true};
                         }else{
                             throw "Error logging in."
