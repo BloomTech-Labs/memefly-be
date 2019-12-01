@@ -36,7 +36,7 @@ Why I chose this stack
 - ```searchAccount(username:"abc"){username followers following}```
   - searchAccount brings back the accounts along with user details by a regular expresion match of the input limited to 30.
   
-- ```update(key:"password", newValue:"NewPass1234!", oldValue:"Password1234!" )```
+- ```update(key:"password", newValue:"NewPass1234!", oldValue:"Password1234!" ) { updated message }```
    - updates user info only the password key requires an oldValue.
    - Accepted keys are:
       - password
