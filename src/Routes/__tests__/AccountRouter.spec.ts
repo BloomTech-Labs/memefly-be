@@ -46,6 +46,20 @@ function logQuery(test:ITestAccount):string{
     }
 `;
 }
+function myAccountQuery():string{
+    return `
+        query{
+            myAccount{
+                account{
+                    username
+                    email
+                }
+                message
+                status
+            }
+        }
+    `
+}
 
 function updateMutation(update:IUpdateTestAccount):string{
     let {key, newValue, oldValue} = update;
@@ -167,6 +181,10 @@ describe("Account Router", () => {
             update.email = {type:"valid"};
             let email:any = update.email;
             let {data:{data:{update:{updated}}}} = await axios(axioConfig(updateMutation({key:"email", newValue:email}), state.auth));
+            //update top level test email to stay up to date with current user info for later tests
+            if(updated){
+                test.email = email;
+            }
             expect(updated).to.eql(true);
        })
        it("does not update email with Invalid mutation", async () => {
@@ -182,7 +200,9 @@ describe("Account Router", () => {
             update.username = {type:"valid"};
             let username:any = update.username;
             let {data:{data:{update:{updated}}}} = await axios(axioConfig(updateMutation({key:"username", newValue:username}), state.auth));
-
+            if(updated){
+                test.username = username;
+            }
             expect(updated).to.eql(true);
        })
        it("does not update username with Invalid mutation", async () => {
@@ -240,7 +260,18 @@ describe("Account Router", () => {
             })()
             expect(testResult).to.eq(false);
         }
-   })
+       })
+        it("brings back account details with myAccount query", async () => {
+            if(state.tokenDecrypted != undefined){
+                let {data:{data:{myAccount:{account:{username, email}, status}}}} = await axios(axioConfig(myAccountQuery(), state.auth));
+                
+                let testResult = (() => {
+                    return username == test.username && email == test.email && status == true
+                })()
+                expect(testResult).to.eq(true);
+
+            }
+        })
        
     };
     Invalid_Register:
