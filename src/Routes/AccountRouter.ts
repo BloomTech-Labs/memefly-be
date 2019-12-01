@@ -103,6 +103,8 @@ function parseMongooseError(error:any){
         default:
           return error.errmsg;
       }
+    }else{
+      return String(error)
     }
   }else{
     return error
