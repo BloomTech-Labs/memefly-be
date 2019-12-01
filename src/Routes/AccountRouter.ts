@@ -32,12 +32,17 @@ interface IUpdateArgs {
   oldValue?: string;
 }
 interface Imessage {
+  account?:{
+    username:string,
+    email:string,
+  }
   token?: string;
   message?: string;
   created?: boolean;
   loggedIn?: boolean;
   status?: boolean;
   updated?:boolean;
+
 }
 interface loginConfig {
   [key: string]: any;
@@ -119,7 +124,7 @@ var root = {
       await AccountModel.create(account);
       message = { message: `Account has been Created`, created: true };
     } catch (error) {
-      message = { message: error, created: false };
+      message = { message:parseMongooseError(error), created: false };
     } finally {
       return message;
     }
@@ -175,7 +180,7 @@ var root = {
         throw "Malformed body needs either email/username";
       }
     } catch (error) {
-      message = { message: error, loggedIn: false };
+      message = { message:parseMongooseError(error), loggedIn: false };
     } finally {
       return message;
     }
@@ -187,7 +192,7 @@ var root = {
     if(cantUpdate(key)) throw `You cannot update ${key}`;
     
     try{
-      let loggedIn = verifyPermision.call(user, context);
+      let loggedIn = await verifyPermision.call(user, context);
       let account:any = await AccountModel.findById(user._id);
       if (account[key] == newValue){
         throw `${key} is already ${newValue}`;
@@ -239,6 +244,24 @@ var root = {
       return !updateTypes.includes(key);
     }
    
+  },
+  async myAccount(_:void, context:IContext): Promise<Imessage>{
+    var message:Imessage = {};
+    var user = {_id:null};
+    try{
+      let loggedIn = await verifyPermision.call(user, context);
+      if(loggedIn && user._id != undefined){
+        let account:any = await AccountModel.findById(user._id);
+        let {username, email} = account
+        message = {message:"Account details", account:{username, email}, status:true};
+      }else{ 
+        throw "Please log in";
+      }
+    }catch(error){
+      message = {message:parseMongooseError(error), status:false}
+    }finally{
+      return message
+    }
   }
 }
 
