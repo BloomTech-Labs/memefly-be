@@ -34,6 +34,9 @@ interface IUpdateArgs {
 interface IFollowArgs{
   username:String;
 }
+interface ISearchUserArgs{
+  username:String;
+}
 interface Imessage {
   account?:{
     username:string;
@@ -347,7 +350,7 @@ var root = {
 
               //remove currentAccount from accountToUnFollow's follower array 
              let unfollowed = await AccountModel.updateOne(accountToUnfollow, {$pullAll:{followers:[currentAccount._id]}}, {new:true});
-             
+
              if(unfollowed.nModified && unfollowing.nModified){
                  message = {message:`you have unfollowed ${accountToUnfollow.username}`, unfollowed:true};
              }else{
@@ -366,7 +369,28 @@ var root = {
     }finally{
       return message;
     }
-  }
+  },
+  async searchAccount(args:ISearchUserArgs):Promise<Array<any>>{
+    var message:Array<any> = []
+    try{
+        let {username:search} = args;
+        let filter = {username:new RegExp(search as string)};
+        let searchResult = await AccountModel.find(filter).limit(30);
+        message = 
+        searchResult.map(user => { 
+            return {
+                followers:user.followers.length,
+                following:user.following.length,
+                username:user.username,
+            }
+        });
+    }catch{
+        //if any errors are thrown via mongoose
+        return [];
+    }finally{
+        return message
+    }   
+},
 }
 
 var schema = makeExecutableSchema({
