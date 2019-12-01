@@ -50,7 +50,31 @@ describe("Valid Account", () => {
            assert.fail();
        }
     })
-    it("successfully updates password")
+    it("successfully updates email", async () => {
+        let email = "example@example.com";
+        let account = await AccountModel.findById(_id);
+        if(account){
+            await AccountModel.updateOne(account, {email});
+            let updatedAccount:any = await AccountModel.findById(_id)
+            expect(updatedAccount.email).to.eql(email);
+        }else{
+            assert.fail()
+        }
+    })
+    it("does not update with invalid email", async () => {
+        let email = "example";
+        let account = await AccountModel.findById(_id);
+        if(account){
+            try {
+                await AccountModel.updateOne(account, {email}, {runValidators:true});
+            }catch({message}){
+                expect(message).to.eql("Validation failed: email: Invalid email address")
+            }
+        }else{
+            assert.fail()
+        }
+    })
+
 })
 
 describe("Invalid Account\n", () => {
