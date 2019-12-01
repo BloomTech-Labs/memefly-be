@@ -16,6 +16,12 @@ interface token{
 }
 interface ITestState {
     tokenDecrypted:null | token;
+    auth?:string | undefined;
+}
+interface IUpdateTestAccount{
+    key:string;
+    newValue:string;
+    oldValue?:string;
 }
 
 
@@ -41,10 +47,25 @@ function logQuery(test:ITestAccount):string{
 `;
 }
 
-function axioConfig(query:string):AxiosRequestConfig{
+function updateMutation(update:IUpdateTestAccount):string{
+    let {key, newValue, oldValue} = update;
+    return `
+        mutation{
+            update(key:"${key}", newValue:"${newValue}", oldValue:"${oldValue}"){
+                updated
+                message
+            }
+        }
+    `
+}
+
+function axioConfig(query:string, auth?:string):AxiosRequestConfig{
     return {
         url:"http://localhost:5000/account",
         method:"POST",
+        headers:{
+            authorization:auth? auth:""
+        },
         data:{
             query
         }
@@ -55,12 +76,18 @@ var server = spawn("node", ["./build/server.js"]);
            console.log(`Test ${data}`);
        })
 
+
+after(async () => {
+    AccountModel.collection.drop();
+})
+
 describe("Account Router", () => {
 
     Valid_Register:
     {
         let state:ITestState = {
             tokenDecrypted:null,
+            
         }
         let test = testAccount();
         test.username = {type:"valid"};
@@ -88,6 +115,7 @@ describe("Account Router", () => {
                             resolve(false)
                         }else{
                             this.tokenDecrypted = decoded;
+                            this.auth = token;
                             resolve(loggedIn);
                         }
        
@@ -133,9 +161,87 @@ describe("Account Router", () => {
            }else{
                 assert("token null");
            }
-           
-
        })
+       it("successfully updates email with mutation", async () => {
+            let update = testAccount();
+            update.email = {type:"valid"};
+            let email:any = update.email;
+            let {data:{data:{update:{updated}}}} = await axios(axioConfig(updateMutation({key:"email", newValue:email}), state.auth));
+            expect(updated).to.eql(true);
+       })
+       it("does not update email with Invalid mutation", async () => {
+        let update = testAccount();
+        update.email = {type:"invalid"};
+        let email:any = update.email;
+        let {data:{data:{update:{updated}}}} = await axios(axioConfig(updateMutation({key:"email", newValue:email}), state.auth));
+  
+        expect(updated).to.eql(false);
+        })
+        it("successfully updates username with mutation", async () => {
+            let update = testAccount();
+            update.username = {type:"valid"};
+            let username:any = update.username;
+            let {data:{data:{update:{updated}}}} = await axios(axioConfig(updateMutation({key:"username", newValue:username}), state.auth));
+
+            expect(updated).to.eql(true);
+       })
+       it("does not update username with Invalid mutation", async () => {
+        let update = testAccount();
+        update.username = {type:"invalid", prefix:"--"};
+        let username:any = update.username;
+        let {data:{data:{update:{updated}}}} = await axios(axioConfig(updateMutation({key:"username", newValue:username}), state.auth));
+
+        expect(updated).to.eql(false);
+        })
+      
+        it("successfully updates password with mutation and hashes new password", async () => {
+            if(state.tokenDecrypted != undefined){
+                let before:any = await AccountModel.findById(state.tokenDecrypted._id)
+                let update = testAccount();
+
+                update.password = {type:"valid", length:16};
+                let password:any = update.hash;
+                let {data:{data:{update:{updated}}}} = await axios(axioConfig(updateMutation({key:"password", newValue:password, oldValue:test.hash}), state.auth));
+                let after:any = await AccountModel.findById(state.tokenDecrypted._id);
+                // If the hash length is greater then 32 (which is the longest length a valid password can be in the test account api) then we know its hashed
+                // also check if the hash is not equal to the original hash
+                let testResult = (() => {
+                    if(after.hash != before.hash && after.hash.length > 32 && updated == true){
+                        //update top level test password 
+                        test.password = update.hash;
+                        return true;
+                    }else{
+                        return false;
+                    }
+                
+                })()
+                expect(testResult).to.eq(true);
+            }
+       })
+       it("does not update invalid password with mutation", async () => {
+        if(state.tokenDecrypted != undefined){
+            let before:any = await AccountModel.findById(state.tokenDecrypted._id)
+            let update = testAccount();
+
+            update.password = {type:"invalid"};
+            let password:any = update.hash;
+            let {data:{data:{update:{updated}}}} = await axios(axioConfig(updateMutation({key:"password", newValue:password, oldValue:test.hash}), state.auth));
+            let after:any = await AccountModel.findById(state.tokenDecrypted._id);
+        
+            let testResult = (() => {
+                if(after.hash != before.hash && after.hash.length > 32 && updated == true){
+                    //update top level test password 
+                    test.password = update.hash;
+                    return true;
+                }else{
+                    return false;
+                }
+            
+            })()
+            expect(testResult).to.eq(false);
+        }
+   })
+       
     };
     Invalid_Register:
     {
