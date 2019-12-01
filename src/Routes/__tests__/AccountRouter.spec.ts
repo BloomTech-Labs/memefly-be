@@ -60,6 +60,28 @@ function myAccountQuery():string{
         }
     `
 }
+function followMutation(test:ITestAccount):string{
+    let {username} = test;
+    return `
+        mutation{
+            follow(username:"${username}"){
+                message
+                followed
+            }
+        }
+    `
+}
+function unfollowMutation(test:ITestAccount):string{
+    let {username} = test;
+    return `
+        mutation{
+            unfollow(username:"${username}"){
+                message
+                unfollowed
+            }
+        }
+    `
+}
 
 function updateMutation(update:IUpdateTestAccount):string{
     let {key, newValue, oldValue} = update;
@@ -272,6 +294,24 @@ describe("Account Router", () => {
 
             }
         })
+        new_Account_Setup:
+        {
+            //setting up a new account to test follow / unfollow
+            let account = testAccount();
+            account.username = {type:"valid"};
+            account.email = {type:"valid"};
+            account.password = {type:"valid"};
+            it("follows an account", async () => {
+                //register new account
+                await AccountModel.create(account);
+                let {data:{data:{follow:{followed}}}} = await axios(axioConfig(followMutation(account), state.auth));
+                expect(followed).to.eql(true);
+            })
+            it("unfollows that same account", async () => {
+                let {data:{data:{unfollow:{unfollowed}}}} = await axios(axioConfig(unfollowMutation(account), state.auth));
+                expect(unfollowed).to.eql(true);
+            })
+        }
        
     };
     Invalid_Register:
