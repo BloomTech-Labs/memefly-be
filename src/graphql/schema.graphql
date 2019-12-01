@@ -1,3 +1,7 @@
+type Account{
+    username:String!
+    email:String!
+}
 
 type register{
     message:String
@@ -12,11 +16,16 @@ type update{
     message:String,
     updated:Boolean!
 }
-
+type myAccount{
+    message:String
+    account:Account  
+    status:Boolean!
+}
 type Mutation{
     register(username:String!, email:String!, password:String!):register!
     update(key:String!, newValue:String!, oldValue:String):update!
 }
 type Query{
     login(username:String, email:String, password:String!):login!
+    myAccount:myAccount!
 }
