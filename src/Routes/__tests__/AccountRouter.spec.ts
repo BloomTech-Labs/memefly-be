@@ -94,6 +94,18 @@ function updateMutation(update:IUpdateTestAccount):string{
         }
     `
 }
+function searcAccountQuery(test:ITestAccount):string{
+    let {username} = test;
+    return `
+        query{
+            searchAccount(username:"${username}"){
+                username
+                followers
+                following
+            }
+        }
+    `
+}
 
 function axioConfig(query:string, auth?:string):AxiosRequestConfig{
     return {
@@ -310,6 +322,14 @@ describe("Account Router", () => {
             it("unfollows that same account", async () => {
                 let {data:{data:{unfollow:{unfollowed}}}} = await axios(axioConfig(unfollowMutation(account), state.auth));
                 expect(unfollowed).to.eql(true);
+            })
+            it("successfully returns a search result for searchAccount query", async () => {
+                let {data:{data:{searchAccount}}} = await axios(axioConfig(searcAccountQuery(account)));
+                // console.log(`Search Result == ${searchAccount[0].username}`)
+                let testResult = (() => {
+                    return typeof searchAccount == "object" && searchAccount.hasOwnProperty("length");
+                })()
+                expect(testResult).to.eql(true);
             })
         }
        
