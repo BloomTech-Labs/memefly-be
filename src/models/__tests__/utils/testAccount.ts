@@ -56,7 +56,7 @@ function generatePassword(type:string, prefix?:string, postfix?:string, length?:
         case "valid":
             (() => {
                 let max = (length || 32);
-                for(let i = 0; i <= max ; ++i){
+                for(let i = 1; i <= max ; ++i){
                     password += ascii[Math.floor(Math.random() * ascii.length)];
                 }   
             })() 
