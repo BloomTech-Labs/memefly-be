@@ -1,11 +1,11 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from "bcrypt";
 import {envConfig} from "../config";
 var {mongodb_URI}  = envConfig;
 
 const SALT_ROUNDS = 10;
 
-var AccountSchema = new mongoose.Schema({
+var AccountSchema:Schema = new mongoose.Schema({
     email:{
         type:String, 
         lowercase:true,
@@ -40,20 +40,27 @@ var AccountSchema = new mongoose.Schema({
             message:"Password must be at least 8 characters long, must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number Can contain special characters"           
         },
     },
+    followers:[{type:Schema.Types.ObjectId, ref:"Account"}],
+    following:[{type:Schema.Types.ObjectId, ref:"Account"}],
     created:{type:Date, default:Date.now}
 })
 interface update{
     hash:string;
 }
-interface IAccount extends mongoose.Document{
+interface IAccount extends Document{
+    _update:update;
+    followers:IAccount["_id"];
+    following:IAccount["_id"];
     email:string;
     username:string;
     hash:string;
     created:Date;
-    _update:update;
+
+    
 }
-interface IAccountModel extends IAccount, mongoose.Document{
+interface IAccountModel extends IAccount, Document{
     compareHash(plain:string):boolean;
+    
 }
 
 
