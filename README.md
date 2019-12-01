@@ -1,13 +1,13 @@
 # API Documentation
 
-#### 1️⃣ Backend delpoyed at [herkou](https://memefly.herokuapp.com/) <br>
+#### Backend delpoyed at [coming soon!](https://www.google.com/) <br>
 
-## 1️⃣ Getting started
+## Getting started
 
 prerequisite enviornment variables
-- you need a .env file containing a mongodb URI ```ACCOUNT_URI``` and ```privateKey``` for the auth token
+- you need a .env file containing a  ```PRIVATE_KEY``` for jwt signing 
 
-Setup for development
+Setup for development 
 - Clone this repo
 - **npm i** to install all required dependencies
 - **npm run dev ** to start the local server
@@ -20,59 +20,75 @@ Why I chose this stack
 -    I wanted to learn GraphQL
 -    I wanted to learn MongoDB
 
-## 2️⃣ Endpoints
-### There are two endpoints 
-```https://memefly.herokuapp.com/api/user```
-```https://memefly.herokuapp.com/api/memes```
+## Endpoints
+```http://localhost:5000/account```
+
 
 #### User Queries and Mutations
-- ```register(username:"example", email:"example@example.com", password:"Password1234!")```
+## All mutations and some queries respond with some form of a boolean
+- ```register(username:"example", email:"example@example.com", password:"Password1234!"){ message created }```
 
-- ```login(username:"example", email:"example@example.com", password:"Password1234!")```
+- ```login(username:"example", email:"example@example.com", password:"Password1234!"){ loggedIn message token }```
 
-  - login query requires either username or email it will default to email if both are in the body.
-- ```searchUser(username:"abc"){username followers following}```
-  - searchUser brings back the users along with user details by a regular expresion match of the input limited to 20.
+  - login query requires either username or email it will default to email if both are in the body.<br>
+    it will respond with a token but will also set token in set-cookies
+
+- ```searchAccount(username:"abc"){username followers following}```
+  - searchAccount brings back the accounts along with user details by a regular expresion match of the input limited to 30.
   
-- ```update(key:"password", value:"NewPass1234!", oldValue:"Password1234!" )```
-   - updates user info only password key requires an oldValue.
+- ```update(key:"password", newValue:"NewPass1234!", oldValue:"Password1234!" ) { updated message }```
+   - updates user info only the password key requires an oldValue.
    - Accepted keys are:
       - password
       - username
       - email
       
-- ```myAccount{username,email}```
+- ```myAccount(username,email){ message account{ username email } status}```
   - returns current user username and or email.
   
-- ```follow(username:"someone")```
+- ```follow(username:"someone"){ message followed }```
   - follows someone by username.
   
-- ```unfollow(username:"someone")```
+- ```unfollow(username:"someone"){ message unfollowed }```
   - unfollows someone by username.
   
-- ```createDMRoom(username:"someone"{ roomID messages {username message timestamp } }```
-  - creates a DM Room instance where you and another user can message each other in real time.
-  - returns chat history if an instance of a room between two users already exists.
+## Using the testAccount api located in ```src/models/__tests__/utils/testAccount.ts```
+#### creating new users on the fly:
+- using valid
+    - ```var test = testAccount()```<br>
+      ```test.username = {type:"valid"} //this will generate a new valid username and sets it to the test object```<br>
+      ```test.email = {type:"valid"} //this will generate a new valid email and sets it to the test object```<br>
+      ```test.password = {type:"valid", length:16} //this will generate a new valid password and sets it to the test object it will also give it a length of 16```<br>
+- using invalid
+    - ```var test = testAccount()```<br>
+      username by default will always be valid even when type invalid is set so you must use a postfix or prefix to get your desired result <br>
+      ```test.username = {type:"invalid"} //this will generate a new invalid username and sets it to the test object```<br>
+      ```test.email = {type:"invalid"} //this will generate a new invalid email and sets it to the test object```<br>
+      ```test.password = {type:"invalid"} //this will generate a new invalid password and sets it to the test object```<br>
+- using prefix / postfix
+    - prefix / postfix will only work with an invalid type of testAccount  property <br>
+    - ```var test = testAccount()```<br>
+    ```test.username = {type:"invalid", postfix:"-"} //this will generate a new invalid username that ends with a dash and sets it to the test object```<br>
+    ```test.email = {type:"invalid", prefix:"_"} //this will generate a new invalid email that begins with an underscore and sets it to the test object```<br>
+-using custom properties
+    - of course you can always just set your own property value<br>
+    - ```var test = testAccount()```<br>
+    ```test.username = "example"```<br>
+    ```test.email = "example@example.com"```<br>
+    ```test.password = "Password1234"```<br>
 
-- ```getRooms {roomID, user}```
-  - returns all of current users created DMRooms along with the usernames and RoomID.
-  
-#### Memes Queries and Mutations
-- ```getMemes { name box url }```
-  - gets all "most popular" memes and returns the names, bounding box(for css) and url (image).
+
 
 # Data Model
 
-
-
-#### 2️⃣ User
+#### User
 ---
 ```
 {
   username: STRING
   email: STRING
   password: STRING
-  
+  created: DATE
 }
 ```
 ---

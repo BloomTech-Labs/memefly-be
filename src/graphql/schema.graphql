@@ -1,47 +1,47 @@
 type Account{
-    status:String!
-    email:String
-    username:String
-}
-type Meme{
-    name:String!
-    box:[String!]
-    url:String!
+    username:String!
+    email:String!
 }
 
-type SearchAccount{
+type register{
+    message:String
+    created: Boolean!
+}
+type login{
+    message:String
+    token:String
+    loggedIn:Boolean!
+}
+type update{
+    message:String,
+    updated:Boolean!
+}
+type myAccount{
+    message:String
+    account:Account  
+    status:Boolean!
+}
+type follow{
+    message:String
+    followed:Boolean!
+}
+type unfollow{
+    message:String
+    unfollowed:Boolean!
+}
+type searchAccount{
     username:String!
     followers:Int!
     following:Int!
 }
-type Messages{
-    username:String,
-    message:String,
-    timestamp:String,
-}
-type DMRoom{
-    status:Int!
-    roomID:String
-    messages:[Messages]
-}
-type Rooms{
-    roomID:String,
-    user:String
+type Mutation{
+    register(username:String!, email:String!, password:String!):register!
+    update(key:String!, newValue:String!, oldValue:String):update!
+    follow(username:String!):follow!
+    unfollow(username:String!):unfollow!
 }
 type Query{
-    login(username:String, email:String, password:String!):String!
-    myAccount:Account
-    searchUser(username:String!):[SearchAccount!]
-    getRooms:[Rooms!]
-    getMemes:[Meme!]
-
-}
-type Mutation{
-    register(username:String!, email:String!, password:String!):String!
-    update(key:String!, value:String!, oldValue:String):String!
-    follow(username:String!):String!
-    unfollow(username:String!):String!
-    # bring back chat room _id
-    createDMRoom(username:String!):DMRoom!
-
+    login(username:String, email:String, password:String!):login!
+    myAccount:myAccount!
+    searchAccount(username:String!):[searchAccount!]
 }
