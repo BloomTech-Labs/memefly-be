@@ -21,11 +21,11 @@ Why I chose this stack
 -    I wanted to learn MongoDB
 
 ## Endpoints
-``http://localhost:5000/account```
+```http://localhost:5000/account```
 
 
 #### User Queries and Mutations
-## all mutations and some queries respond with some form of a boolean
+## All mutations and some queries respond with some form of a boolean
 - ```register(username:"example", email:"example@example.com", password:"Password1234!"){ message created }```
 
 - ```login(username:"example", email:"example@example.com", password:"Password1234!"){ loggedIn message token }```
