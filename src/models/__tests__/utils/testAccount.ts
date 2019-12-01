@@ -29,7 +29,7 @@ function generateUsername(type:string, prefix?:string, postfix?:string ):string{
     return username
 }
 
-function genrateEmail(type:string, prefix?:string, postfix?:string ):string{
+function generateEmail(type:string, prefix?:string, postfix?:string ):string{
     var email:string = "";
     var length = email_addresses.data.length;
     var base = email_addresses.data[Math.floor(Math.random() * length)].email;
@@ -131,10 +131,10 @@ function testAccount():ITestAccount{
                             console.log(`you cant have a type:'${value.type}' and add a prefix or postfix to email`)
                             return Reflect.set(obj, "email", obj.email);
                         }else{
-                            return Reflect.set(obj, "email", genrateEmail("valid"));
+                            return Reflect.set(obj, "email", generateEmail("valid"));
                         }
                     case "invalid":
-                        return Reflect.set(obj, "email", genrateEmail("invalid", (value.prefix || ""), (value.postfix || "")));
+                        return Reflect.set(obj, "email", generateEmail("invalid", (value.prefix || ""), (value.postfix || "")));
                     default:
                         console.log(`not a valid type:'${value.type}' for email use valid | invalid`);
                         return Reflect.set(obj, "email", obj.email);
