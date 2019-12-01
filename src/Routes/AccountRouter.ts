@@ -31,13 +31,18 @@ interface IUpdateArgs {
   newValue: string;
   oldValue?: string;
 }
+interface IFollowArgs{
+  username:String;
+}
 interface Imessage {
   account?:{
-    username:string,
-    email:string,
+    username:string;
+    email:string;
   }
   token?: string;
   message?: string;
+  followed?:boolean;
+  unfollowed?:boolean;
   created?: boolean;
   loggedIn?: boolean;
   status?: boolean;
@@ -261,6 +266,105 @@ var root = {
       message = {message:parseMongooseError(error), status:false}
     }finally{
       return message
+    }
+  },
+  async follow(args:IFollowArgs, context:IContext): Promise<Imessage>{
+    var message:Imessage = {};
+    var user = {_id:null};
+    try{
+      let {username} = args;
+      let loggedIn = await verifyPermision.call(user, context);
+      if(loggedIn && user._id != undefined){
+        let currentAccount = await AccountModel.findById(user._id);
+        if(currentAccount != undefined){
+
+          if(currentAccount.username == username){
+            throw "you cant follow yourself";
+          }
+
+          let accountToFollow = await AccountModel.findOne({username});
+
+          if(accountToFollow == undefined){
+            throw `user ${username} does not exist`;
+          }
+          //if you are following 
+          if(accountToFollow.followers.includes(currentAccount._id) && currentAccount.following.includes(accountToFollow._id)){
+            console.log(currentAccount.following);
+            throw `you are already following ${username}`;
+            //if you are not following 
+          }else if(!accountToFollow.followers.includes(currentAccount._id) && !currentAccount.following.includes(accountToFollow._id)){
+             //add to accountToFollow's follower array 
+             let followed = await AccountModel.updateOne(accountToFollow, {$push:{followers:{_id:currentAccount._id}}});
+             //add to currentAccount following array
+             let following = await AccountModel.updateOne(currentAccount, {$push:{following:{_id:accountToFollow._id}}});
+             if(followed.nModified && following.nModified){
+                 message = {message:`you have followed ${accountToFollow.username}`, followed:true};
+             }else{
+               throw `Error unable to follow ${username}`;
+             }
+          }else{
+           throw `Error unable to follow ${username}`;
+          }
+
+        }else{ 
+          throw "Please Log in"
+        }
+      }
+    }catch(error){
+      console.log(error);
+      message = {message:parseMongooseError(error), followed:false}
+    }finally{
+      return message;
+    }
+  },
+  async unfollow(args:IFollowArgs, context:IContext): Promise<Imessage>{
+    var message:Imessage = {};
+    var user = {_id:null};
+    try{
+      let {username} = args;
+      let loggedIn = await verifyPermision.call(user, context);
+      if(loggedIn && user._id != undefined){
+        let currentAccount = await AccountModel.findById(user._id);
+        if(currentAccount != undefined){
+
+          if(currentAccount.username == username){
+            throw "you cant unfollow yourself";
+          }
+
+          let accountToUnfollow = await AccountModel.findOne({username});
+
+          if(accountToUnfollow == undefined){
+            throw `user ${username} does not exist`;
+          }
+          //if you are not following 
+          if(!accountToUnfollow.followers.includes(currentAccount._id) && !currentAccount.following.includes(accountToUnfollow._id)){
+            throw `you are not following ${username}`;
+            //if you are following 
+          }else if(accountToUnfollow.followers.includes(currentAccount._id) && currentAccount.following.includes(accountToUnfollow._id)){
+
+              //remove accountToUnfollow from currentAccount following array
+             let unfollowing = await AccountModel.updateOne(currentAccount, {$pullAll:{following:[accountToUnfollow._id]}}, {new:true});
+
+              //remove currentAccount from accountToUnFollow's follower array 
+             let unfollowed = await AccountModel.updateOne(accountToUnfollow, {$pullAll:{followers:[currentAccount._id]}}, {new:true});
+             
+             if(unfollowed.nModified && unfollowing.nModified){
+                 message = {message:`you have unfollowed ${accountToUnfollow.username}`, unfollowed:true};
+             }else{
+               throw `Error unable to unfollow ${username}`;
+             }
+          }else{
+           throw `Error unable to unfollow ${username}`;
+          }
+
+        }else{ 
+          throw "Please Log in"
+        }
+      }
+    }catch(error){
+      message = {message:parseMongooseError(error), unfollowed:false}
+    }finally{
+      return message;
     }
   }
 }
