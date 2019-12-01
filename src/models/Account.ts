@@ -8,6 +8,7 @@ const SALT_ROUNDS = 10;
 var AccountSchema = new mongoose.Schema({
     email:{
         type:String, 
+        lowercase:true,
         required:true, 
         unique:true,
         validate:{
@@ -19,6 +20,7 @@ var AccountSchema = new mongoose.Schema({
     },
     username:{
         type:String, 
+        lowercase:true,
         required:true, 
         unique:true,
         validate:{
@@ -40,12 +42,15 @@ var AccountSchema = new mongoose.Schema({
     },
     created:{type:Date, default:Date.now}
 })
-
+interface update{
+    hash:string;
+}
 interface IAccount extends mongoose.Document{
     email:string;
     username:string;
     hash:string;
     created:Date;
+    _update:update;
 }
 interface IAccountModel extends IAccount, mongoose.Document{
     compareHash(plain:string):boolean;
@@ -64,6 +69,22 @@ AccountSchema.pre<IAccount>("save",function(next){
         next();
     }
 });
+
+AccountSchema.pre<IAccount>("updateOne", async function(next){
+    
+    if(this._update.hasOwnProperty("hash")){
+        
+        //validate password trying to update
+        if(this.schema.obj.hash.validate.validator(this._update.hash)){
+            this._update.hash = await bcrypt.hash(this._update.hash, SALT_ROUNDS);
+            next();
+        }else{
+            throw Error(this.schema.obj.hash.validate.message);
+        }
+       
+    }
+    next()
+})
 
 var options =
 {
