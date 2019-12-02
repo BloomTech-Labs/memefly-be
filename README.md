@@ -70,7 +70,7 @@ Why I chose this stack
     - ```var test = testAccount()```<br>
     ```test.username = {type:"invalid", postfix:"-"} //this will generate a new invalid username that ends with a dash and sets it to the test object```<br>
     ```test.email = {type:"invalid", prefix:"_"} //this will generate a new invalid email that begins with an underscore and sets it to the test object```<br>
--using custom properties
+- using custom properties
     - of course you can always just set your own property value<br>
     - ```var test = testAccount()```<br>
     ```test.username = "example"```<br>
