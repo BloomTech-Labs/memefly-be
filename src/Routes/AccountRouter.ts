@@ -402,7 +402,7 @@ var schema = makeExecutableSchema({
 
 var AccountRouter = express.Router();
 
-AccountRouter.use("/account", function controller(request, response) {
+AccountRouter.use("/accounts", function controller(request, response) {
   return graphqlHTTP({
     schema,
     rootValue: root,
