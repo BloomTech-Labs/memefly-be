@@ -21,11 +21,11 @@ Why I chose this stack
 -    I wanted to learn MongoDB
 
 ## Endpoints
-``http://localhost:5000/account```
+```http://localhost:5000/account```
 
 
 #### User Queries and Mutations
-## all mutations and some queries respond with some form of a boolean
+## All mutations and some queries respond with some form of a boolean
 - ```register(username:"example", email:"example@example.com", password:"Password1234!"){ message created }```
 
 - ```login(username:"example", email:"example@example.com", password:"Password1234!"){ loggedIn message token }```
@@ -36,7 +36,7 @@ Why I chose this stack
 - ```searchAccount(username:"abc"){username followers following}```
   - searchAccount brings back the accounts along with user details by a regular expresion match of the input limited to 30.
   
-- ```update(key:"password", newValue:"NewPass1234!", oldValue:"Password1234!" )```
+- ```update(key:"password", newValue:"NewPass1234!", oldValue:"Password1234!" ) { updated message }```
    - updates user info only the password key requires an oldValue.
    - Accepted keys are:
       - password
