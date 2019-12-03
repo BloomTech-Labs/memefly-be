@@ -2,7 +2,7 @@ const env = process.env.NODE_ENV || "development";
 import dev from "./development";
 import prod from "./production";
 interface IenvConfig {
-    accountURI:string;
+    URI:string;
     privateKey:string;
 }
 
