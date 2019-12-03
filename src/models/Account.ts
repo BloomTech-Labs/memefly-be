@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from "bcrypt";
 import {envConfig} from "../config";
-var {mongodb_URI}  = envConfig;
+var {accountURI}  = envConfig;
 
 const SALT_ROUNDS = 10;
 
@@ -103,7 +103,7 @@ var options =
 AccountSchema.methods.compareHash =  async function(plain:string):Promise<boolean>{
     return await bcrypt.compare(plain, this.hash);
 }
-var conn = mongoose.createConnection(mongodb_URI, options);
+var conn = mongoose.createConnection(accountURI, options);
 
 var AccountModel =  conn.model<IAccountModel>("Account", AccountSchema);
 

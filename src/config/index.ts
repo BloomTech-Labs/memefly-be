@@ -1,12 +1,18 @@
 const env = process.env.NODE_ENV || "development";
 import dev from "./development";
+import prod from "./production";
 interface IenvConfig {
-    mongodb_URI:string;
-    private_key:string;
+    accountURI:string;
+    privateKey:string;
 }
-export var envConfig:IenvConfig;
-switch(env){
-    case "development":
-        envConfig = dev;
-        break;
-}
+
+export var envConfig:IenvConfig = 
+(() => {
+    switch(env){
+        case "production":
+            return prod;
+        default:
+            return dev;
+        
+    }
+})()

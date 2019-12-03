@@ -63,7 +63,7 @@ function sign(payload: object): Promise<string | undefined> {
   return new Promise((resove, reject) => {
     jwt.sign(
       payload,
-      envConfig.private_key,
+      envConfig.privateKey,
       { expiresIn: "2h" },
       (error, token) => {
         if (error) {
@@ -88,7 +88,7 @@ function verifyPermision(this:ILoggedInuser, context: IContext): Promise<boolean
     }
     if(token != undefined){
         return new Promise((resolve) => {
-            jwt.verify(token as string, envConfig.private_key, (error, decoded:any) => {
+            jwt.verify(token as string, envConfig.privateKey, (error, decoded:any) => {
                 if(error){
                     resolve(false);
                 }else{
