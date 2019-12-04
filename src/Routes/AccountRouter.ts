@@ -7,7 +7,7 @@ import { envConfig } from "../config";
 import { parse } from "cookie";
 import jwt from "jsonwebtoken";
 
-var typeDefs = importSchema("./src/graphql/schema.graphql");
+var typeDefs = importSchema("./src/graphql/AccountSchema.graphql");
 
 const updateTypes = ["username", "email", "password"];
 
