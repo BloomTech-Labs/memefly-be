@@ -4,7 +4,7 @@ import AccountRouter from "./Routes/AccountRouter";
 import BaseMemesRouter from "./Routes/BaseMemesRouter";
 import cors from "cors"
 var app = express();
-app.use(cors({credentials:true, origin:"http://localhost:3000"}))
+app.use(cors({credentials:true, origin:true}))
 app.use("/api",AccountRouter);
 app.use("/api", BaseMemesRouter);
 app.listen(PORT, () => {
