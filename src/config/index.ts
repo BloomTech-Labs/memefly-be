@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV != "production"){
+    var dotenv = require("dotenv");
+    dotenv.config()
+}
 const env = process.env.NODE_ENV || "development";
 import dev from "./development";
 import prod from "./production";

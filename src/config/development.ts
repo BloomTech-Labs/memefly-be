@@ -1,5 +1,5 @@
 var dev = {
-    URI:"mongodb://localhost:27017/development",
+    URI:(process.env.URI_DEV as string),
     privateKey:(process.env.PRIVATE_KEY as string),
 }
 export default dev;
