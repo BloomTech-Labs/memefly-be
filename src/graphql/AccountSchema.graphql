@@ -1,0 +1,47 @@
+type Account{
+    username:String!
+    email:String!
+}
+
+type register{
+    message:String
+    created: Boolean!
+}
+type login{
+    message:String
+    token:String
+    loggedIn:Boolean!
+}
+type update{
+    message:String,
+    updated:Boolean!
+}
+type myAccount{
+    message:String
+    account:Account  
+    status:Boolean!
+}
+type follow{
+    message:String
+    followed:Boolean!
+}
+type unfollow{
+    message:String
+    unfollowed:Boolean!
+}
+type searchAccount{
+    username:String!
+    followers:Int!
+    following:Int!
+}
+type Mutation{
+    register(username:String!, email:String!, password:String!):register!
+    update(key:String!, newValue:String!, oldValue:String):update!
+    follow(username:String!):follow!
+    unfollow(username:String!):unfollow!
+}
+type Query{
+    login(username:String, email:String, password:String!):login!
+    myAccount:myAccount!
+    searchAccount(username:String!):[searchAccount!]
+}
