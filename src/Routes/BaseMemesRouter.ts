@@ -25,5 +25,5 @@ var schema = buildSchema(`
 var BaseMemesRouter = express.Router();
 
 BaseMemesRouter.use("/memes/base", graphqlHTTP(() => {
-  return {schema, rootValue: root}}))
+  return {schema, rootValue: root, graphiql:true}}))
 export default BaseMemesRouter;
