@@ -9,7 +9,8 @@
     "postinstall":"npm run build",
     "dev": "nodemon ./build/server.js",
     "testAccountRouter": "mocha -r ts-node/register src/Routes/__tests__/AccountRouter.spec.ts --timeout 60000",
-    "testAccountModel": "mocha -r ts-node/register src/models/__tests__/Account.spec.ts --timeout 60000"
+    "testAccountModel": "mocha -r ts-node/register src/models/__tests__/Account.spec.ts --timeout 60000",
+    "testBaseMemeModel": "mocha -r ts-node/register src/models/__tests__/BaseMeme.spec.ts --timeout 60000"
   },
   "repository": {
     "type": "git",
