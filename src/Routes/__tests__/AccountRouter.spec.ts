@@ -5,11 +5,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import "mocha";
 import {spawn} from "child_process";
 import AccountModel from "../../models/Account";
-import dotenv from "dotenv";
-
-
-
-var envConfig:any = dotenv.config().parsed;
+import {envConfig} from "../../config"
 
 interface token{
     _id:string;
@@ -17,6 +13,7 @@ interface token{
 interface ITestState {
     tokenDecrypted:null | token;
     auth?:string | undefined;
+    registerThrown?:Boolean;
 }
 interface IUpdateTestAccount{
     key:string;
@@ -109,7 +106,7 @@ function searcAccountQuery(test:ITestAccount):string{
 
 function axioConfig(query:string, auth?:string):AxiosRequestConfig{
     return {
-        url:"http://localhost:5000/account",
+        url:"http://localhost:5000/api/account",
         method:"POST",
         headers:{
             authorization:auth? auth:""
@@ -120,9 +117,9 @@ function axioConfig(query:string, auth?:string):AxiosRequestConfig{
     }
 }
 var server = spawn("node", ["./build/server.js"]);
-       server.stdout.on("data", (data) => {
-           console.log(`Test ${data}`);
-       })
+server.stdout.on("data", (data) => {
+    console.log(`Test ${data}`);
+})
 
 
 after(async () => {
@@ -130,12 +127,12 @@ after(async () => {
 })
 
 describe("Account Router", () => {
-
+    
     Valid_Register:
     {
         let state:ITestState = {
             tokenDecrypted:null,
-            
+            registerThrown:false,
         }
         let test = testAccount();
         test.username = {type:"valid"};
@@ -144,13 +141,17 @@ describe("Account Router", () => {
         let reg = regMutation(test);
         let log = logQuery(test);
 
-        function register():Promise<boolean>{
+        function register(this:ITestState):Promise<boolean>{
             return new Promise((resolve) => {
+
                 axios(axioConfig(reg)).then((result) =>{ 
                     let {data:{data:{register:{created}}}} = result;
                     resolve(created);
                     
-                }).catch(() => resolve(false));
+                }).catch(() => {
+                    this.registerThrown = true;
+                    resolve(false);
+                });
             })
         }
        
@@ -158,7 +159,7 @@ describe("Account Router", () => {
             return new Promise((resolve) => {
                 axios(axioConfig(log)).then(result => {
                     let {data:{data:{login:{loggedIn, token}}}} = result;
-                    jwt.verify(token, envConfig.PRIVATE_KEY, (error: JsonWebTokenError, decoded: any) => {
+                    jwt.verify(token, envConfig.privateKey, (error: JsonWebTokenError, decoded: any) => {
                         if(error){
                             resolve(false)
                         }else{
@@ -173,11 +174,14 @@ describe("Account Router", () => {
             })
         }
         it("creates a Valid account with register mutation", async () => {
-            let created = await register();
+            let created = await register.call(state);
             expect(created).to.eql(true); 
        })
        it("does not re-create same account", async () => {
-            let created = await register();
+            let created = await register.call(state);
+            if(state.registerThrown){
+                assert.fail()
+            }
             expect(created).to.eql(false); 
        })
        it("successfully logs in with username and password", async () => {
@@ -192,7 +196,7 @@ describe("Account Router", () => {
                     let cookieArr = i.split(";");
                     token = {token:cookieArr[0].split("=")[1]};
                }else{
-                   return assert("no auth cookie found.")
+                   return assert.fail("no auth cookie found.")
                }
                
            }
@@ -204,10 +208,10 @@ describe("Account Router", () => {
                 if(account != undefined){
                     expect((account._id == state.tokenDecrypted._id)).to.eql(true);
                 }else{
-                    assert("account not found with provided token");
+                    assert.fail("account not found with provided token");
                 } 
            }else{
-                assert("token null");
+                assert.fail("token null");
            }
        })
        it("successfully updates email with mutation", async () => {
@@ -373,6 +377,7 @@ describe("Account Router", () => {
                     // console.log(`<Invalid ${accounts.label}>>> created ? >>>`, accounts.created);
                     resultArr.push(accounts.created);
                 }
+                console.log(resultArr);
                 expect(resultArr).to.not.include(true)
             }
             run()
