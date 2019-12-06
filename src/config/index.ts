@@ -8,6 +8,8 @@ import prod from "./production";
 interface IenvConfig {
     URI:string;
     privateKey:string;
+    AWSAccess:string;
+    AWSSecret:string;
 }
 
 export var envConfig:IenvConfig = 
