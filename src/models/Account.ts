@@ -1,6 +1,9 @@
 import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from "bcrypt";
 import {envConfig} from "../config";
+
+
+
 var {URI}  = envConfig;
 
 const SALT_ROUNDS = 10;
@@ -40,6 +43,7 @@ var AccountSchema:Schema = new mongoose.Schema({
             message:"Password must be at least 8 characters long, must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number Can contain special characters"           
         },
     },
+    memes:[{ key: {type:String, unique:true} }],
     followers:[{type:Schema.Types.ObjectId, ref:"Account"}],
     following:[{type:Schema.Types.ObjectId, ref:"Account"}],
     created:{type:Date, default:Date.now}
@@ -55,6 +59,7 @@ interface IAccount extends Document{
     username:string;
     hash:string;
     created:Date;
+    memes:[{key:string}]
 
     
 }
