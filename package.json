@@ -22,6 +22,7 @@
     "url": "https://github.com/Lambda-School-Labs/memefly-be/issues"
   },
   "devDependencies": {
+    "@types/aws-sdk": "^2.7.0",
     "@types/axios": "^0.14.0",
     "@types/bcrypt": "^3.0.0",
     "@types/chai": "^4.2.5",
@@ -43,6 +44,7 @@
     "typescript": "^3.7.2"
   },
   "dependencies": {
+    "aws-sdk": "^2.584.0",
     "bcrypt": "^3.0.7",
     "cookie": "^0.4.0",
     "cors": "^2.8.5",

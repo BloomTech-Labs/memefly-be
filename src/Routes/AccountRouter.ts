@@ -6,10 +6,15 @@ import { makeExecutableSchema } from "graphql-tools";
 import { envConfig } from "../config";
 import { parse } from "cookie";
 import jwt from "jsonwebtoken";
-
+import AWS from "aws-sdk";
 var typeDefs = importSchema("./src/graphql/AccountSchema.graphql");
-
 const updateTypes = ["username", "email", "password"];
+var s3 = new AWS.S3({
+  accessKeyId:envConfig.AWSAccess,
+  secretAccessKey:envConfig.AWSSecret,
+  region:"us-east-2"
+});
+
 
 interface IContext {
   response: express.Response;
@@ -37,11 +42,16 @@ interface IFollowArgs{
 interface ISearchUserArgs{
   username:String;
 }
-interface Imessage {
+interface IDeleteSavedMemeArgs{
+  key:string
+}
+interface IMessage {
   account?:{
     username:string;
     email:string;
   }
+  fetched?:boolean;
+  memes?:object;
   token?: string;
   message?: string;
   followed?:boolean;
@@ -50,14 +60,37 @@ interface Imessage {
   loggedIn?: boolean;
   status?: boolean;
   updated?:boolean;
+  uploaded?:boolean;
+  deleted?:boolean;
 
 }
 interface loginConfig {
   [key: string]: any;
   [Symbol.iterator]: any;
 }
-interface ILoggedInuser {
+interface ILoggedInUser {
     _id?:string | null
+}
+
+interface IUploadParams{
+  Bucket:string;
+  Key:string;
+  Body:string;
+  ContentType:string
+}
+interface IUploadMemeArgs{
+  encoding:string;
+  fileType:string;
+  title:string;
+}
+
+function s3UploadParams(Key:string, Body:string):IUploadParams{
+  return {
+    Bucket:"memefly", 
+    ContentType:"application/json",
+    Key, 
+    Body
+  }
 }
 function sign(payload: object): Promise<string | undefined> {
   return new Promise((resove, reject) => {
@@ -76,7 +109,7 @@ function sign(payload: object): Promise<string | undefined> {
   });
 }
 //predicate function to check if user is logged in has side effect of setting the user id to its context
-function verifyPermision(this:ILoggedInuser, context: IContext): Promise<boolean> {
+function verifyPermision(this:ILoggedInUser, context: IContext): Promise<boolean> {
     var {request:{headers:{authorization, cookie}}} = context;
     var token:string | undefined;
     if(cookie != undefined){
@@ -123,9 +156,51 @@ function parseMongooseError(error:any){
     return error
   }
 }
+async function s3Upload(title:string, uid:string, fileType:string, encoding:string):Promise<string>{
+
+  let key = `${title}_${uid}_${Date.now()}_${fileType}`;
+
+  return new Promise((resolve, reject) => {
+    s3.upload(s3UploadParams(key, JSON.stringify({
+      _id:uid,
+      title,
+      encoding,
+      fileType
+    })), (error:any, data:any) => {
+      if(error){
+        reject(error)
+      }else{
+        resolve(data.key)
+      }
+    })
+  })
+}
+async function s3GetObject(Key:string):Promise<JSON>{
+  return new Promise((resolve, reject) => {
+    s3.getObject({Bucket:"memefly", Key}, (error, data) => {
+      if(error){
+        reject(error);
+      }else{
+        resolve(JSON.parse(String(data.Body)))
+      }
+    })
+  })
+}
+async function s3DeleteObject(Key:string):Promise<boolean>{
+  return new Promise((resolve, reject) => {
+    s3.deleteObject({Bucket:"memefly", Key}, (error) => {
+      if(error){
+        reject(error)
+      }else{
+        resolve(true)
+      }
+    })
+  })
+}
+
 var root = {
-  async register(args: IAccountArgs): Promise<Imessage> {
-    var message: Imessage = {};
+  async register(args: IAccountArgs): Promise<IMessage> {
+    var message: IMessage = {};
     try {
       let { username, email, password: hash } = args;
       let account = { username, email, hash };
@@ -137,8 +212,8 @@ var root = {
       return message;
     }
   },
-  async login(args: ILoginArgs, context: IContext): Promise<Imessage> {
-    var message: Imessage = {};
+  async login(args: ILoginArgs, context: IContext): Promise<IMessage> {
+    var message:IMessage = {};
     try {
       //user can log in with either username or email
       let _config: loginConfig = {
@@ -193,10 +268,10 @@ var root = {
       return message;
     }
   },
-  async update(args: IUpdateArgs, context: IContext): Promise<Imessage> {
-    var message:Imessage = {};
+  async update(args: IUpdateArgs, context: IContext): Promise<IMessage> {
+    var message:IMessage = {};
     var {key, oldValue, newValue} = args;
-    var user = {_id:null};
+    var user:ILoggedInUser = {_id:null};
     if(cantUpdate(key)) throw `You cannot update ${key}`;
     
     try{
@@ -253,8 +328,8 @@ var root = {
     }
    
   },
-  async myAccount(_:void, context:IContext): Promise<Imessage>{
-    var message:Imessage = {};
+  async myAccount(_:void, context:IContext): Promise<IMessage>{
+    var message:IMessage = {};
     var user = {_id:null};
     try{
       let loggedIn = await verifyPermision.call(user, context);
@@ -271,9 +346,9 @@ var root = {
       return message
     }
   },
-  async follow(args:IFollowArgs, context:IContext): Promise<Imessage>{
-    var message:Imessage = {};
-    var user = {_id:null};
+  async follow(args:IFollowArgs, context:IContext): Promise<IMessage>{
+    var message:IMessage = {};
+    var user:ILoggedInUser = {_id:null};
     try{
       let {username} = args;
       let loggedIn = await verifyPermision.call(user, context);
@@ -314,15 +389,15 @@ var root = {
         }
       }
     }catch(error){
-      console.log(error);
+      console.error(error);
       message = {message:parseMongooseError(error), followed:false}
     }finally{
       return message;
     }
   },
-  async unfollow(args:IFollowArgs, context:IContext): Promise<Imessage>{
-    var message:Imessage = {};
-    var user = {_id:null};
+  async unfollow(args:IFollowArgs, context:IContext): Promise<IMessage>{
+    var message:IMessage = {};
+    var user:ILoggedInUser = {_id:null};
     try{
       let {username} = args;
       let loggedIn = await verifyPermision.call(user, context);
@@ -391,6 +466,91 @@ var root = {
         return message
     }   
 },
+  async uploadMeme(args:IUploadMemeArgs, context: IContext):Promise<IMessage>{
+    var message:IMessage = {};
+    var user:ILoggedInUser = {_id:null};
+    try{
+      let {encoding, fileType, title} = args;
+      if(encoding == undefined || fileType == undefined){
+        throw "Invalid param mutation needs a base 64 encoding / fileType";
+      }
+      let loggedIn = await verifyPermision.call(user, context);
+      if(loggedIn && user._id != undefined){
+        let uid:string = user._id 
+        let key = await s3Upload(title, uid, fileType, encoding);
+        let added = await AccountModel.updateOne({_id:uid}, {$push:{memes:{key}}});
+        if(added.nModified){
+          message = {message:`Meme has been uploaded`, uploaded:true}
+        }else{
+          throw "error saving meme"
+        }
+      }else{
+        throw "Please log in";
+      }
+    }catch(error){
+      message = {message:parseMongooseError(error), uploaded:false};
+    }finally{
+      return message
+    }
+  },
+  async getSavedMemes(_:void, context:IContext):Promise<IMessage>{
+    var message:IMessage = {}
+    var user:ILoggedInUser = {_id:null};
+    
+    try{
+      let loggedIn = await verifyPermision.call(user, context);
+      if(loggedIn && user._id != undefined){
+        let account = await AccountModel.findById(user._id);
+        if(account != undefined){
+          if(account.memes.length < 1){
+            throw "Account has no memes";
+          }
+          let savedMemes = account.memes.map(async (meme) => {
+            return  {meme:await s3GetObject(meme.key), key:meme.key}
+          })
+          message = await (async ():Promise<IMessage> => {
+              return  new Promise((resolve) => {
+                Promise.all(savedMemes).then(result => {
+                  resolve({message:"OK", memes:result, fetched:true});
+                })
+                
+              })
+          })()
+        }else{
+          throw "Error getting account details";
+        }
+      }else{
+        throw "Please log in";
+      }
+    }catch(error){
+      message = {message:parseMongooseError(error), fetched:false};
+    }finally{
+      return message;
+    }
+  },
+  async deleteSavedMeme(args:IDeleteSavedMemeArgs, context:IContext):Promise<IMessage>{
+    var message:IMessage = {};
+    var user = {_id:null};
+    try{
+      let loggedIn = verifyPermision.call(user, context);
+      let {key} = args;
+      if(loggedIn && user._id != undefined){
+        let deleted = await AccountModel.updateOne({_id:user._id}, {$pull:{memes:{key}}}, { safe: true, multi:true });
+        if(deleted.nModified){
+          let result = await s3DeleteObject(key)
+          message = {message:"Meme has been deleted", deleted:result};
+        }else{
+          throw "Error deleting meme";
+        }
+      }else{
+        throw "please log in"
+      }
+    }catch(error){
+      message = {message:parseMongooseError(error), deleted:false};
+    }finally{
+      return message
+    }
+  }
 }
 
 var schema = makeExecutableSchema({

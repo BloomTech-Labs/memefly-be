@@ -4,6 +4,7 @@ import AccountRouter from "./Routes/AccountRouter";
 import BaseMemesRouter from "./Routes/BaseMemesRouter";
 import cors from "cors"
 var app = express();
+app.use(express.json({limit: '50mb'}));
 app.use(cors({credentials:true, origin:true}))
 app.use("/api",AccountRouter);
 app.use("/api", BaseMemesRouter);
