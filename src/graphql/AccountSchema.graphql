@@ -34,14 +34,40 @@ type searchAccount{
     followers:Int!
     following:Int!
 }
+type uploadMeme{
+    message:String
+    uploaded:Boolean!
+}
+type meme{
+    encoding:String!
+    fileType:String!
+    title:String!
+    key:String!
+}
+type savedMemes{
+    meme:meme!
+    key:String!
+}
+type MEMES{
+    message:String
+    memes:[savedMemes!]!
+    fetched:Boolean!
+}
+type deleted{
+    message:String
+    deleted:Boolean!
+}
 type Mutation{
     register(username:String!, email:String!, password:String!):register!
     update(key:String!, newValue:String!, oldValue:String):update!
     follow(username:String!):follow!
     unfollow(username:String!):unfollow!
+    uploadMeme(encoding:String!, fileType:String!, title:String!):uploadMeme!
+    deleteSavedMeme(key:String!):deleted!
 }
 type Query{
     login(username:String, email:String, password:String!):login!
     myAccount:myAccount!
     searchAccount(username:String!):[searchAccount!]
+    getSavedMemes:MEMES!
 }
