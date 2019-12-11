@@ -203,8 +203,7 @@ var root = {
     var message: IMessage = {};
     try {
       let { username, email, password: hash } = args;
-      let account = { username, email, hash };
-      await AccountModel.create(account);
+      await AccountModel.create({username, email, hash});
       message = { message: `Account has been Created`, created: true };
     } catch (error) {
       message = { message:parseMongooseError(error), created: false };
