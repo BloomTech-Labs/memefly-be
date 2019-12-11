@@ -1,7 +1,7 @@
 const PORT = process.env.PORT || 5000;
 import express from "express";
 import AccountRouter from "./Routes/AccountRouter";
-import BaseMemesRouter from "./Routes/BaseMemesRouter";
+import BaseMemesRouter from "./Routes/GenMemeRouter";
 import cors from "cors"
 var app = express();
 app.use(express.json({limit: '50mb'}));

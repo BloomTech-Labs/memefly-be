@@ -3,7 +3,7 @@ if (process.env.NODE_ENV != "production"){
     dotenv.config()
 }
 import { expect } from "chai";
-import BaseMemeModel from "../BaseMeme";
+import BaseMemeModel from "../GenMeme";
 import "mocha";
 
 
