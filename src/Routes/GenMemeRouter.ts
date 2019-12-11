@@ -2,10 +2,10 @@ import express from "express";
 import graphqlHTTP from "express-graphql";
 import { makeExecutableSchema } from "graphql-tools";
 import { importSchema } from "graphql-import";
-import BaseMemeModel from "../models/BaseMeme";
+import BaseMemeModel from "../models/GenMeme";
 import {parseMongooseError} from "./utils/parseMongooseError";
-var typeDefs = importSchema("./src/graphql/BaseMemeSchema.graphql");
-interface IBaseMeme{
+var typeDefs = importSchema("./src/graphql/GenMemeSchema.graphql");
+interface IGenMeme{
   meme_id?:Number;
   meme_name?:String;
   meme_bounding_box?:Array<String>;
@@ -15,28 +15,29 @@ interface IBaseMeme{
   fetched:Boolean
 }
 
-interface IGetBaseMemeArgs{
+interface IGenMemeArgs{
   id:Number;
   rand:Boolean;
 }
 
 var root = {
-    async getBaseMeme(args:IGetBaseMemeArgs):Promise<IBaseMeme>{
-      var message:IBaseMeme = {message:"init", fetched:false}
+    async generateMeme(args:IGenMemeArgs):Promise<IGenMeme>{
+      var message:IGenMeme = {message:"init", fetched:false}
       try{
         let {id, rand} = args
         if(id == undefined && rand == undefined){
           throw "Invalid Query you must provide either an id or a rand:true";
         }
         let filter = {
-          meme_id:rand? Math.floor(Math.random() * 108) + 1: id
+          meme_id:rand? Math.floor(Math.random() * 108): id
         }
         
         let meme = await BaseMemeModel.findOne(filter)
+        console.log(meme);
         meme = meme? meme.toObject():undefined;
         if(meme != undefined){
       
-          message = {message:`${rand ? "Randomly":""} selected ${meme.meme_name}`, ...meme, fetched:true}
+          message = {message:`${rand ? "Randomly ":""}Selected ${meme.meme_name}`, ...meme, fetched:true}
         }else{
           throw `could not fetch meme`
         }

@@ -1,12 +1,12 @@
-type base_meme{
+type meme{
     meme_id:Int
     meme_name:String
     meme_bounding_box:[String]
     meme_url:String
-    meme_text:[String]
+    generated_meme_texts:[String]
     message:String!
     fetched:Boolean!
   }
 type Query{
-    getBaseMeme(id:Int, rand:Boolean):base_meme
+    generateMeme(id:Int, rand:Boolean):meme
 }
