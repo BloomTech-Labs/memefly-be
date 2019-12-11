@@ -43,7 +43,7 @@ var AccountSchema:Schema = new mongoose.Schema({
             message:"Password must be at least 8 characters long, must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number Can contain special characters"           
         },
     },
-    memes:[{ key: {type:String, unique:true} }],
+    memes:[{ key: {type:String} }],
     followers:[{type:Schema.Types.ObjectId, ref:"Account"}],
     following:[{type:Schema.Types.ObjectId, ref:"Account"}],
     created:{type:Date, default:Date.now}
