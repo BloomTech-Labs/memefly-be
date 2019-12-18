@@ -31,9 +31,8 @@ var root = {
         let filter = {
           meme_id:rand? Math.floor(Math.random() * 108): id
         }
-        
-        let meme = await BaseMemeModel.findOne(filter)
-        console.log(meme);
+        let meme = await BaseMemeModel.findOne(filter);
+
         meme = meme? meme.toObject():undefined;
         if(meme != undefined){
       
@@ -46,6 +45,13 @@ var root = {
       }finally{
         return message
       }
+    },
+    async getAll():Promise<Array<any>>{
+      let memes:any = await BaseMemeModel.find();
+  
+      return memes.map((x:any) => {
+        return {...x.toObject()}
+      })
     }
 }
 
