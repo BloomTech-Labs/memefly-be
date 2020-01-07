@@ -5,7 +5,7 @@ import BaseMemesRouter from "./Routes/GenMemeRouter";
 import cors from "cors"
 var app = express();
 app.use(express.json({limit: '50mb'}));
-app.use(cors({credentials:true, origin:true}))
+app.use(cors())
 app.use("/api",AccountRouter);
 app.use("/api", BaseMemesRouter);
 app.listen(PORT, () => {
