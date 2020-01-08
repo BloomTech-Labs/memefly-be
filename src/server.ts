@@ -8,7 +8,7 @@ app.use(express.json({limit: '50mb'}));
 app.use(cors())
 app.use("/api",AccountRouter);
 app.use("/api", BaseMemesRouter);
-app.use(function(req, res, next) {
+app.use("/api/memes/base",function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "https://memefly.netlify.com/");
     res.header("Access-Control-Allow-Origin", "https://memeflyai.com/");
     res.header("Access-Control-Allow-Origin", "*");
