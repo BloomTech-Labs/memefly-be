@@ -10,6 +10,8 @@ app.use("/api",AccountRouter);
 app.use("/api", BaseMemesRouter);
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Origin", "https://memefly.netlify.com/");
+    res.header("Access-Control-Allow-Origin", "https://memeflyai.com/");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
   });
